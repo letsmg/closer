@@ -1,0 +1,47 @@
+analise o que mais precisa ser feito abaixo e sugira melhorias onde achar necessario
+
+falta adicionar no projeto:
+
+1- opção de ocultar perfil do usuario de certas cidades ou estado conforme escolha dele
+2- opção de informar email os quais não podem visualizar seu perfil também
+
+
+na tabela profiles:
+as imagens ou videos trocados entre os usuários deverá ao final ficar salvo apenas nos celulares ou computador dos usuários preferencialmente em forma de hash ou pasta segura, onde poderá ser apagado a qualquer momento por qualquer um dos dois e não poderá ser acessada por outros apps
+
+
+
+
+VAMOS TER DE RODAR php artisan schedule:work EM PRODUCAO 
+PARA RODAR OS JOBS DE MINUTO EM MINUTO
+
+
+
+
+
+LEMBRETES
+
+Job,Função,Benefício
+
+Limpeza,Deleta arquivos inúteis,Economiza dinheiro com armazenamento e mantém o servidor rápido.
+
+//esse codigo abaixo so funciona local
+//PARA FUNCIONAR O JOB NA HOSPEDAGEM TEM DE FAZER UM CRON JOB COM O CÓDGIO:
+//cd /caminho-do-seu-projeto && php artisan schedule:run >> /dev/null 2>&1
+
+
+// Agenda o job para rodar todos os domingos à meia-noite
+Schedule::job(new LimparLogsAcesso)->weekly();
+
+
+
+
+
+a ideia do revelar like é que podem haver vários perfis que curtiram o usuário que ou ele 
+pode ter recusado ou pode ainda nao ter visto para decidir se curte ou não. por outro lado 
+temos a ideia do segundas chances que permite curtir alguem a segunda vista. sobre esse caso 
+de revelar likes eles podem acabar aumentando ou diminuindo automaticamente se o usuário 
+acabar dando like ou dislike no perfil no feed sem precisar revelar antecipadamente. Talvez 
+seja mais fácil manter o apenas o sistema de segundas chances e adicionar uma prioridade a 
+mais na busca de feeds sempre colocando quem ja curtiu o usuário aguardando a resposta dele 
+apenas. o que acha? pode ser um diferencial no app em relação a concorrencia

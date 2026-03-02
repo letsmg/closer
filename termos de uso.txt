@@ -1,0 +1,36 @@
+Aviso de Privacidade e Segurança (Simplificado)
+O que coletamos e por que?
+Para garantir a sua segurança e cumprir com as obrigações legais (como o Marco Civil da Internet, Lei nº 12.965/2014), nosso sistema registra automaticamente os seguintes dados a cada acesso:
+
+Endereço IP: Identificação da sua conexão na internet.
+
+Data e Horário: O momento exato em que você acessou nossa plataforma.
+
+Dispositivo: Informações básicas sobre o aparelho utilizado (ex: marca e modelo).
+
+Finalidade da Coleta:
+
+Segurança Mútua: Prevenir fraudes, acessos indevidos e garantir que sua conta não seja utilizada por terceiros.
+
+Cumprimento Legal: Somos obrigados por lei a manter esses registros por um período mínimo de 6 meses para auxiliar autoridades em caso de investigações judiciais.
+
+Proteção de Dados: Estes dados são armazenados de forma segura e não são compartilhados com empresas de publicidade.
+
+Seus Direitos:
+Você tem o direito de solicitar informações sobre seus dados armazenados a qualquer momento, conforme previsto na Lei Geral de Proteção de Dados (LGPD).
+
+
+
+
+
+
+
+
+
+
+
+******************
+Como aplicar isso no App (Kotlin):
+Você pode exibir isso em um Dialog ou em uma TextView com scroll logo abaixo do botão de "Cadastrar".
+
+Dica do Gemini: Colocar um checkbox do tipo: [ ] Estou ciente de que meus dados de acesso (IP e Horário) serão registrados para fins de segurança. ajuda a comprovar o consentimento livre e informado.

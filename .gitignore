@@ -1,30 +1,58 @@
-/vendor/
-node_modules/
-npm-debug.log
-yarn-error.log
+# -----------------------------
+# Sistema operacional / arquivos temporários
+# -----------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
 
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
+# -----------------------------
+# Ambiente / Configurações sensíveis
+# -----------------------------
+.env
+.env.backup
+.env.production
+auth.json
 
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
+# -----------------------------
+# Dependências / Builds
+# -----------------------------
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage               # symlink do storage (muito importante não commitar)
 
-# Laravel 5 & Lumen specific with changed public path
+/storage/*.key
+/storage/pail                 # Laravel Pail (logs em tempo real)
+
+/bootstrap/compiled.php       # Obsoleto desde Laravel 5, mas por segurança
+app/storage/                  # Obsoleto (Laravel 4), mas por segurança
+
+# Variantes se public foi renomeado para public_html (opcional)
 public_html/storage
 public_html/hot
 
-storage/*.key
-.env
-Homestead.yaml
-Homestead.json
-/.vagrant
+# -----------------------------
+# Ferramentas de dev / IDEs / Editores
+# -----------------------------
 .phpunit.result.cache
-
-/public/build
-/storage/pail
-.env.backup
-.env.production
+.phpunit.cache/
 .phpactor.json
-auth.json
+
+# IDEs comuns
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+
+# Vagrant / Homestead (se usar)
+Homestead.json
+Homestead.yaml
+/.vagrant
+
+# Outros caches / temp
+.phpactor.json                # Já tem acima, mas reforçando
