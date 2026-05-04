@@ -13,21 +13,40 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->ulid('uuid')->nullable()->unique(); // ULID para ofuscação de IDs
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // Status e Nível
             $table->boolean('ativo')->default(true);
-            $table->tinyInteger('nivel_acesso')->default(0);            
+            $table->tinyInteger('nivel_acesso')->default(0); // 0=Free, 1=Plus, 2=Premium, 3=Admin
+            
+            // Two-Factor Authentication
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
+            $table->boolean('two_factor_enabled')->default(false);
+            
+            // Assinatura e Reputação
             $table->string('assinatura_id')->nullable(); 
             $table->integer('reputacao')->default(0)->index();
+            $table->timestamp('premium_expira_em')->nullable();
+            
+            // Interação e Tracking
             $table->timestamp('ultima_interacao_at')->nullable()->index();
             $table->timestamp('ultima_conversa_at')->nullable()->index();
-            $table->timestamp('premium_expira_em')->nullable();            
+            $table->timestamp('ultimo_login_em')->nullable();
+            $table->string('ultimo_ip', 45)->nullable();
             $table->timestamp('last_seen')->nullable();
+            
             $table->rememberToken();
             $table->timestamps();
         });
+        
+        // Popular UUIDs para usuários existentes (se houver)
+        // Nota: Em novo banco, os UUIDs serão gerados pelo modelo automaticamente
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

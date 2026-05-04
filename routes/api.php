@@ -3,10 +3,12 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\{
-    AuthController,
+    JwtAuthController,
+    OAuth2Controller,
+    TwoFactorController,
     FeedController,
     LocalizacaoController,
-    PreferenciaController,
+    PeferenciaController,
     PagamentoController,
     ShortsController,
     ChatController,
@@ -14,7 +16,9 @@ use App\Http\Controllers\Api\{
     PerfilController,
     InteracaoController,
     SegundaChanceController,
-    UsuarioController
+    UsuarioController,
+    LikeController,
+    BloqueioController
 };
 
 
@@ -24,8 +28,45 @@ use App\Http\Controllers\Api\{
 |--------------------------------------------------------------------------
 */
 
-Route::post('/cadastrar', [UsuarioController::class, 'cadastrar'])->name('cadastrar');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+/*
+|--------------------------------------------------------------------------
+| AUTH JWT - Sistema de Autenticação JWT
+|--------------------------------------------------------------------------
+| Endpoints de autenticação movidos para routes/auth.php
+| Acesse: POST /api/auth/login, /api/auth/register
+| Documentação: https://github.com/tymondesigns/jwt-auth
+*/
+
+// Mantém compatibilidade temporária com rotas antigas (serão removidas)
+Route::post('/cadastrar', [UsuarioController::class, 'cadastrar'])->name('cadastrar.legacy');
+Route::post('/login', [JwtAuthController::class, 'login'])->name('login');
+
+/*
+|--------------------------------------------------------------------------
+| OAUTH2 ENDPOINTS (RFC 6749 Standard)
+|--------------------------------------------------------------------------
+| Token endpoint com suporte a:
+| - password grant (login direto)
+| - refresh_token grant (renovação)
+| - Escopos OAuth2 (read:profile, write:messages, etc.)
+| - Short-lived access tokens (15 min) + Long-lived refresh tokens (30 dias)
+|
+| Escopos disponíveis:
+| read:profile, write:profile, read:feed, write:interactions,
+| read:messages, write:messages, read:matches, write:photos,
+| read:shorts, write:premium, admin:users
+*/
+
+Route::post('/oauth/token', [OAuth2Controller::class, 'token'])->name('oauth.token');
+Route::post('/oauth/revoke', [OAuth2Controller::class, 'revoke'])->name('oauth.revoke');
+Route::post('/oauth/introspect', [OAuth2Controller::class, 'introspect'])->name('oauth.introspect');
+
+// Endpoint para listar escopos disponíveis (documentação)
+Route::get('/oauth/scopes', function () {
+    return response()->json([
+        'scopes' => \App\Http\Controllers\Api\OAuth2Controller::SCOPES,
+    ]);
+})->name('oauth.scopes');
 
 // Localização
 // Rota para buscar cidades com limitação de 120 requisições por minuto para evitar abuso
@@ -39,7 +80,22 @@ Route::middleware('throttle:120,1')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| ROTAS PROTEGIDAS - JWT AUTH
+|--------------------------------------------------------------------------
+|
+| Todas as rotas abaixo requerem autenticação JWT válida.
+| Header necessário: Authorization: Bearer {seu_token_jwt}
+| 
+| Compatibilidade:
+| - Flutter/Mobile: Use JWT (Bearer token)
+| - Web SPA: Use JWT (Bearer token)
+| - Web tradicional: Pode usar sessão (hybrid auth)
+|
+*/
+
+Route::middleware(['auth:api', 'verified'])->group(function () {
 
     Route::get('/quem-me-deu-like', [LikeController::class, 'index'])->middleware('plus');
 
@@ -91,8 +147,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/preferencias', [PreferenciaController::class, 'index']);
-    Route::post('/perfil/preferencias', [PreferenciaController::class, 'sincronizar']);
+    Route::get('/preferencias', [PeferenciaController::class, 'index']);
+    Route::post('/perfil/preferencias', [PeferenciaController::class, 'sincronizar']);
 
     /*
     |--------------------------------------------------------------------------
@@ -130,5 +186,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     */
 
     Route::post('/pagamento/verificar', [PagamentoController::class, 'verificarCompra']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Two-Factor Authentication (2FA)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/2fa/status', [TwoFactorController::class, 'status']);
+    Route::get('/2fa/setup', [TwoFactorController::class, 'setup']);
+    Route::post('/2fa/confirm', [TwoFactorController::class, 'confirm']);
+    Route::post('/2fa/disable', [TwoFactorController::class, 'disable']);
+    Route::post('/2fa/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
 
 });

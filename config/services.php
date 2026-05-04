@@ -35,4 +35,30 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Image Moderation Services
+    |--------------------------------------------------------------------------
+    |
+    | Configuração para APIs de moderação de imagem (Google Vision, Sightengine)
+    |
+    */
+    'image_moderation' => [
+        'provider' => env('IMAGE_MODERATION_PROVIDER', 'google'),
+        
+        // Google Vision API
+        'google_api_key' => env('GOOGLE_VISION_API_KEY'),
+        
+        // Sightengine
+        'sightengine_api_user' => env('SIGHTENGINE_API_USER'),
+        'sightengine_api_secret' => env('SIGHTENGINE_API_SECRET'),
+        
+        // Thresholds (0-1, onde 1 = 100%)
+        'thresholds' => [
+            'adult' => env('IMAGE_MODERATION_ADULT_THRESHOLD', 0.7),
+            'violence' => env('IMAGE_MODERATION_VIOLENCE_THRESHOLD', 0.7),
+            'racy' => env('IMAGE_MODERATION_RACY_THRESHOLD', 0.8),
+        ],
+    ],
+
 ];

@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Traits\HasUlid;
 
 
-class User extends Authenticatable implements MustVerifyEmail // 👈 Obrigatório
+class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasUlid;
 
     /*
     |--------------------------------------------------------------------------
@@ -24,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 Obrigatór
         'name',
         'email',
         'password',
+        'uuid',              // ULID público (ofusca ID incremental)
         'ativo',
         'nivel_acesso',      // 0 = Free | 1 = Plus | 2 = Premium
         'reputacao',
@@ -98,6 +101,32 @@ class User extends Authenticatable implements MustVerifyEmail // 👈 Obrigatór
     {
         // Considera online se a última atividade foi nos últimos 5 minutos
         return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | JWT Subject Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     */
+    public function getJWTIdentifier(): mixed
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'email' => $this->email,
+            'name' => $this->name,
+            'nivel' => $this->nivel ?? 0,
+        ];
     }
 
 }

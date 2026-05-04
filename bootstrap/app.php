@@ -4,11 +4,16 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RegistrarAcesso;
-use App\Http\Middleware\UpdateUserOnlineStatus; // O novo middleware
+use App\Http\Middleware\UpdateUserOnlineStatus;
+use App\Http\Middleware\HybridAuth;
+use App\Http\Middleware\HybridVerified;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
+        web: [
+            __DIR__.'/../routes/web.php',
+            __DIR__.'/../routes/auth.php',
+        ],
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
@@ -21,9 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
             UpdateUserOnlineStatus::class, // Adicionado aqui
         ]);
 
-        // Adicione o apelido aqui embaixo
+        // Aliases dos middlewares
         $middleware->alias([
             'plus' => \App\Http\Middleware\VerificarAcessoPlus::class,
+            'auth.hybrid' => HybridAuth::class,
+            'verified.hybrid' => HybridVerified::class,
+            'scope' => \App\Http\Middleware\OAuthScope::class,
         ]);
 
     })

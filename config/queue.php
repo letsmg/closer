@@ -84,9 +84,57 @@ return [
         'failover' => [
             'driver' => 'failover',
             'connections' => [
+                'rabbitmq',
+                'kafka',
+                'redis',
                 'database',
-                'deferred',
             ],
+        ],
+
+        'rabbitmq' => [
+            'driver' => 'rabbitmq',
+            'queue' => env('RABBITMQ_QUEUE', 'default'),
+            'connection' => 'default',
+            'hosts' => [
+                [
+                    'host' => env('RABBITMQ_HOST', '127.0.0.1'),
+                    'port' => env('RABBITMQ_PORT', 5672),
+                    'user' => env('RABBITMQ_USER', 'guest'),
+                    'password' => env('RABBITMQ_PASSWORD', 'guest'),
+                    'vhost' => env('RABBITMQ_VHOST', '/'),
+                ],
+            ],
+            'options' => [
+                'ssl_options' => [
+                    'cafile' => env('RABBITMQ_SSL_CAFILE', null),
+                    'local_cert' => env('RABBITMQ_SSL_LOCALCERT', null),
+                    'local_key' => env('RABBITMQ_SSL_LOCALKEY', null),
+                    'verify_peer' => env('RABBITMQ_SSL_VERIFY_PEER', true),
+                    'passphrase' => env('RABBITMQ_SSL_PASSPHRASE', null),
+                ],
+                'queue' => [
+                    'job' => VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob::class,
+                ],
+            ],
+            'after_commit' => false,
+        ],
+
+        'kafka' => [
+            'driver' => 'kafka',
+            'queue' => env('KAFKA_QUEUE', 'default'),
+            'brokers' => env('KAFKA_BROKERS', 'localhost:9092'),
+            'topics' => [
+                'default' => env('KAFKA_TOPIC', 'default'),
+                'events' => env('KAFKA_EVENTS_TOPIC', 'closer-events'),
+                'notifications' => env('KAFKA_NOTIFICATIONS_TOPIC', 'closer-notifications'),
+            ],
+            'consumer_group_id' => env('KAFKA_CONSUMER_GROUP_ID', 'closer-consumer'),
+            'security_protocol' => env('KAFKA_SECURITY_PROTOCOL', 'PLAINTEXT'),
+            'sasl_mechanism' => env('KAFKA_SASL_MECHANISM', null),
+            'sasl_username' => env('KAFKA_SASL_USERNAME', null),
+            'sasl_password' => env('KAFKA_SASL_PASSWORD', null),
+            'ssl_ca_location' => env('KAFKA_SSL_CA_LOCATION', null),
+            'after_commit' => false,
         ],
 
     ],
