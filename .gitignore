@@ -56,3 +56,4 @@ Homestead.yaml
 
 # Outros caches / temp
 .phpactor.json                # Já tem acima, mas reforçando
+hints.txt

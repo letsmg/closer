@@ -21,8 +21,13 @@ class LoginRequest extends SanitizedRequest
     public function rules(): array
     {
         return [
-            'username' => 'required|email|max:255',
-            'password' => 'required|string|min:6|max:255',
+            'username' => 'required|string|email',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).+$/',
+            ],
             'scope' => 'sometimes|string|max:500',
             'device_fingerprint' => 'sometimes|string|max:255',
         ];
@@ -35,9 +40,16 @@ class LoginRequest extends SanitizedRequest
     {
         return [
             'username.required' => 'O email é obrigatório.',
-            'username.email' => 'Digite um email válido.',
+            'username.string' => 'O email deve ser um texto.',
+            'username.email' => 'O email deve ser válido.',
             'password.required' => 'A senha é obrigatória.',
-            'password.min' => 'A senha deve ter pelo menos 6 caracteres.',
+            'password.string' => 'A senha deve ser um texto.',
+            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
+            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula e 1 caractere especial (!@#$%^&*()).',
+            'scope.string' => 'O escopo deve ser um texto.',
+            'scope.max' => 'O escopo não pode ter mais de 500 caracteres.',
+            'device_fingerprint.string' => 'O fingerprint deve ser um texto.',
+            'device_fingerprint.max' => 'O fingerprint não pode ter mais de 255 caracteres.',
         ];
     }
 

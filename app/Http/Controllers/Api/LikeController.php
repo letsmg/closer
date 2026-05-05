@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Like;
+use App\Models\LikeModel;
 use App\Models\UserMatch;
-use App\Models\SegundaChance;
+use App\Models\SecondChance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LikeController extends Controller
+class LikeControllerUpdated extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | CURTIR OU PASSAR
+    | CURTIR OR PASS
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
@@ -25,17 +25,17 @@ class LikeController extends Controller
             'is_like' => 'required|boolean'
         ]);
 
-        // 🔒 Limite diário para nível gratuito
+        // Daily limit for free level
         if ($user->nivel_acesso == 0 && $request->is_like) {
 
-            $likesHoje = Like::where('user_id', $user->id)
+            $likesToday = LikeModel::where('user_id', $user->id)
                 ->where('is_like', true)
                 ->where('created_at', '>=', now()->startOfDay())
                 ->count();
 
-            if ($likesHoje >= 20) {
+            if ($likesToday >= 20) {
                 return response()->json([
-                    'error' => 'Limite diário de 20 curtidas atingido.',
+                    'error' => 'Daily limit of 20 likes reached.',
                     'code' => 'LIMIT_LIKES_REACHED'
                 ], 403);
             }
@@ -46,61 +46,50 @@ class LikeController extends Controller
 
         return DB::transaction(function () use ($user, $targetId, $isLike) {
 
-            // Atualiza ou cria interação
-            $like = Like::updateOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'liked_user_id' => $targetId
-                ],
-                [
-                    'is_like' => $isLike
-                ]
+            // Update or create interaction
+            $like = LikeModel::updateOrCreate(
+                ['user_id' => $user->id, 'liked_user_id' => $targetId],
+                ['is_like' => $isLike]
             );
 
-            // Se for DISLIKE
-            if (!$isLike) {
-
-                SegundaChance::firstOrCreate([
-                    'perfil_id' => $user->perfil->id,
-                    'like_id'   => $like->id
-                ]);
-
-                return response()->json([
-                    'status' => 'disliked'
-                ]);
+            // If it's a like, check for match and create second chance
+            if ($isLike) {
+                $this->checkForMatchAndCreateSecondChance($user, $targetId, $like);
             }
 
-            // 🔥 Incrementa karma do perfil curtido
-            DB::table('perfis')
-                ->where('user_id', $targetId)
-                ->increment('pontos_likes');
-
-            // 🔁 Verifica reciprocidade
-            $matchBack = Like::where('user_id', $targetId)
-                ->where('liked_user_id', $user->id)
-                ->where('is_like', true)
-                ->exists();
-
-            if ($matchBack) {
-
-                $id1 = min($user->id, $targetId);
-                $id2 = max($user->id, $targetId);
-
-                $match = UserMatch::firstOrCreate([
-                    'user_one_id' => $id1,
-                    'user_two_id' => $id2
-                ]);
-
-                return response()->json([
-                    'status' => 'match',
-                    'message' => 'É um Match! Vocês já podem conversar.',
-                    'match_id' => $match->id
-                ]);
-            }
-
-            return response()->json([
-                'status' => 'liked'
-            ]);
+            return response()->json($like);
         });
+    }
+
+    /**
+     * Check for mutual like and create second chance
+     */
+    private function checkForMatchAndCreateSecondChance($user, $targetId, $like)
+    {
+        // Check if target user also liked current user
+        $mutualLike = LikeModel::where('user_id', $targetId)
+            ->where('liked_user_id', $user->id)
+            ->where('is_like', true)
+            ->first();
+
+        if ($mutualLike) {
+            // Create match
+            $match = UserMatch::create([
+                'user1_id' => $user->id,
+                'user2_id' => $targetId,
+                'matched_at' => now()
+            ]);
+
+            // Create second chances for both users
+            SecondChance::create([
+                'profile_id' => $user->id,
+                'like_id' => $like->id,
+            ]);
+
+            SecondChance::create([
+                'profile_id' => $targetId,
+                'like_id' => $mutualLike->id,
+            ]);
+        }
     }
 }

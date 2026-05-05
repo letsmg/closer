@@ -7,8 +7,10 @@ use App\Models\User;
 use App\Models\RefreshToken;
 use App\Services\DeviceFingerprintService;
 use App\Services\AuditLogService;
+use App\Services\AuthService;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Traits\SanitizesOutput;
+use App\Enums\UserLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -30,11 +32,11 @@ class OAuth2Controller extends Controller
 {
     use SanitizesOutput;
     
-    protected DeviceFingerprintService $fingerprintService;
+    protected AuthService $authService;
 
-    public function __construct(DeviceFingerprintService $fingerprintService)
+    public function __construct(AuthService $authService)
     {
-        $this->fingerprintService = $fingerprintService;
+        $this->authService = $authService;
     }
     /**
      * Escopos padrão disponíveis no sistema
@@ -80,72 +82,58 @@ class OAuth2Controller extends Controller
      * PASSWORD GRANT (Login com escopos)
      * --------------------------------------------------------------------------
      */
-    protected function handlePasswordGrant(LoginRequest $request)
+    protected function handlePasswordGrant(Request $request)
     {
-        // Validação e sanitização já feitas no LoginRequest
+        // Validação manual
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'username' => 'required|string|email',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).+$/',
+            ],
+        ], [
+            'username.required' => 'O email é obrigatório.',
+            'username.email' => 'O email deve ser válido.',
+            'password.required' => 'A senha é obrigatória.',
+            'password.string' => 'A senha deve ser um texto.',
+            'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
+            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula e 1 caractere especial (!@#$%^&*()).',
+        ]);
 
-        // Verifica se email foi banido (já sanitizado no request)
-        $emailNormalizado = strtolower(trim($request->input('username')));
-        $hashEmail = $this->gerarHashEmail($emailNormalizado);
-        
-        $emailBanido = DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
-            ->exists();
-
-        if ($emailBanido) {
+        if ($validator->fails()) {
             return $this->safeJsonResponse([
-                'error' => 'access_denied',
-                'error_description' => 'Conta suspensa.'
-            ], 403);
+                'error' => 'invalid_request',
+                'error_description' => 'Dados inválidos.',
+                'errors' => $validator->errors(),
+            ], 400);
         }
 
-        // Autentica com dados sanitizados
-        $credentials = $request->getCredentials();
-
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json([
-                    'error' => 'invalid_grant',
-                    'error_description' => 'Credenciais inválidas.'
-                ], 401);
-            }
+            $result = $this->authService->login([
+                'username' => $request->input('username'),
+                'password' => $request->input('password'),
+            ], $request);
 
-            $user = Auth::user();
-
-            // Verificações
-            if (!$user->hasVerifiedEmail()) {
-                return response()->json([
-                    'error' => 'access_denied',
-                    'error_description' => 'Email não verificado.'
+            if (isset($result['requires_2fa'])) {
+                return $this->safeJsonResponse([
+                    'error' => 'requires_2fa',
+                    'error_description' => 'Autenticação de dois fatores necessária.',
+                    'requires_2fa' => true,
+                    'temp_token' => $result['temp_token'],
                 ], 403);
             }
 
-            if (!$user->ativo) {
-                return response()->json([
-                    'error' => 'access_denied',
-                    'error_description' => 'Conta desativada.'
-                ], 403);
-            }
+            return $this->safeJsonResponse($result);
 
-            // Processa escopos solicitados
-            $requestedScopes = $this->parseScopes($request->input('scope'));
-            $grantedScopes = $this->validateScopes($requestedScopes, $user);
-
-            // Atualiza último login
-            $user->update([
-                'ultimo_ip' => $request->ip(),
-                'ultimo_login_em' => now(),
-            ]);
-
-            // Gera tokens
-            return $this->generateTokenResponse($user, $grantedScopes, $request);
-
-        } catch (JWTException $e) {
-            \Log::error('Erro JWT no login: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'server_error',
-                'error_description' => 'Erro interno ao gerar token.'
-            ], 500);
+        } catch (\Exception $e) {
+            \Log::error('Erro no login: ' . $e->getMessage());
+            
+            return $this->safeJsonResponse([
+                'error' => 'invalid_grant',
+                'error_description' => $e->getMessage(),
+            ], 401);
         }
     }
 
@@ -156,48 +144,22 @@ class OAuth2Controller extends Controller
      */
     protected function handleRefreshTokenGrant(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'refresh_token' => 'required|string',
-            'scope' => 'sometimes|string',
-        ]);
+        try {
+            $result = $this->authService->refreshToken(
+                $request->input('refresh_token'),
+                $request
+            );
 
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => 'invalid_request',
-                'error_description' => 'Refresh token obrigatório.'
-            ], 400);
-        }
+            return $this->safeJsonResponse($result);
 
-        // Valida o refresh token
-        $refreshToken = RefreshToken::validate($request->refresh_token);
-
-        if (!$refreshToken) {
-            return response()->json([
+        } catch (\Exception $e) {
+            \Log::error('Erro no refresh token: ' . $e->getMessage());
+            
+            return $this->safeJsonResponse([
                 'error' => 'invalid_grant',
-                'error_description' => 'Refresh token inválido, expirado ou revogado.'
+                'error_description' => $e->getMessage(),
             ], 401);
         }
-
-        $user = $refreshToken->user;
-
-        // Verifica se usuário ainda é válido
-        if (!$user || !$user->ativo) {
-            $refreshToken->revokeFamily();
-            return response()->json([
-                'error' => 'invalid_grant',
-                'error_description' => 'Usuário inválido ou desativado.'
-            ], 401);
-        }
-
-        // Processa escopos (não pode expandir, apenas reduzir)
-        $requestedScopes = $this->parseScopes($request->input('scope'));
-        $grantedScopes = $this->limitScopes($requestedScopes, $refreshToken->scopes);
-
-        // Rotaciona o refresh token (segurança: impede reuse)
-        $newRefreshToken = $refreshToken->rotate($grantedScopes, $request->ip(), $request->userAgent());
-
-        // Gera novo access token
-        return $this->generateTokenResponseFromRefresh($user, $grantedScopes, $newRefreshToken);
     }
 
     /**
@@ -285,25 +247,16 @@ class OAuth2Controller extends Controller
                 'uuid' => $user->uuid, // ULID público
                 'name' => $user->name,
                 'email' => $user->email,
-                'nivel' => $user->nivel ?? 0,
+                'nivel' => $user->nivel_acesso,
+                'level_name' => $user->getLevelAttribute()->getName(),
+                'level_description' => $user->getLevelAttribute()->getDescription(),
+                'level_color' => $user->getLevelAttribute()->getColor(),
+                'two_factor_enabled' => $user->two_factor_enabled,
             ],
-        ];
-    }
-
-    protected function generateTokenResponseFromRefresh(User $user, array $scopes, array $refreshTokenData): array
-    {
-        $accessToken = JWTAuth::claims([
-            'scopes' => $scopes,
-            'token_type' => 'access_token',
-        ])->fromUser($user);
-
-        return [
-            'access_token' => $accessToken,
-            'token_type' => 'Bearer',
-            'expires_in' => 900, // 15 minutos
-            'refresh_token' => $refreshTokenData['refresh_token'],
-            'refresh_expires_in' => $refreshTokenData['expires_in'],
-            'scope' => implode(' ', $scopes),
+            'device_info' => [
+                'is_new_device' => $fingerprintResult['is_new_device'],
+                'requires_verification' => $fingerprintResult['requires_verification'],
+            ],
         ];
     }
 
@@ -328,16 +281,22 @@ class OAuth2Controller extends Controller
         $scopes = array_intersect($requestedScopes, $validScopes);
 
         // Verifica escopos de admin
-        if (in_array('admin:users', $scopes) && $user->nivel !== 3) {
+        if (in_array('admin:users', $scopes) && !$user->canManageUsers()) {
             $scopes = array_diff($scopes, ['admin:users']);
         }
 
         // Verifica escopos premium
         $premiumScopes = ['write:premium', 'read:quem-me-deu-like'];
-        $userLevel = $user->nivel ?? 0;
         
-        if ($userLevel < 1) { // Não é premium
+        if (!$user->hasPremiumAccess()) {
             $scopes = array_diff($scopes, $premiumScopes);
+        }
+
+        // Verifica escopos Plus
+        $plusScopes = ['read:quem-me-deu-like', 'write:shorts'];
+        
+        if (!$user->hasPlusAccess()) {
+            $scopes = array_diff($scopes, $plusScopes);
         }
 
         return empty($scopes) ? ['read:profile'] : $scopes;

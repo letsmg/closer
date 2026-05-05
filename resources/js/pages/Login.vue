@@ -2,8 +2,8 @@
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
     <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Bem-vindo de volta</h1>
-        <p class="text-gray-600 mt-2">Entre na sua conta para continuar</p>
+        <h1 class="text-3xl font-bold text-gray-800">Welcome Back</h1>
+        <p class="text-gray-600 mt-2">Sign in to your account to continue</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-6">
@@ -14,23 +14,20 @@
             type="email"
             required
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            placeholder="seu@email.com"
+            placeholder="user@example.com"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700">Senha</label>
-          <input
+          <label class="block text-sm font-medium text-gray-700">Password</label>
+          <PasswordInput
             v-model="form.password"
-            type="password"
-            required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="••••••••"
           />
         </div>
 
         <div v-if="requires2FA" class="bg-yellow-50 border border-yellow-200 p-4 rounded-md">
-          <label class="block text-sm font-medium text-yellow-800">Código 2FA</label>
+          <label class="block text-sm font-medium text-yellow-800">2FA Code</label>
           <input
             v-model="form.twoFactorCode"
             type="text"
@@ -39,7 +36,7 @@
             placeholder="000000"
           />
           <p class="text-xs text-yellow-600 mt-1">
-            Abra seu app de autenticação e digite o código
+            Open your authentication app and enter the code
           </p>
         </div>
 
@@ -52,15 +49,15 @@
           :disabled="authStore.loading"
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
-          <span v-if="authStore.loading">Entrando...</span>
-          <span v-else>Entrar</span>
+          <span v-if="authStore.loading">Signing in...</span>
+          <span v-else>Sign In</span>
         </button>
       </form>
 
       <p class="mt-6 text-center text-sm text-gray-600">
-        Não tem uma conta?
+        Don't have an account?
         <RouterLink to="/register" class="font-medium text-indigo-600 hover:text-indigo-500">
-          Cadastre-se
+          Sign Up
         </RouterLink>
       </p>
     </div>
@@ -71,13 +68,14 @@
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import PasswordInput from '../components/PasswordInput.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 const form = reactive({
-  email: '',
-  password: '',
+  email: 'user@1.com', // Default test user
+  password: 'Change@123', // Default test password (8+ chars, uppercase, special)
   twoFactorCode: '',
 });
 

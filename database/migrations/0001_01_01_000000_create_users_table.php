@@ -21,7 +21,7 @@ return new class extends Migration
             
             // Status e Nível
             $table->boolean('ativo')->default(true);
-            $table->tinyInteger('nivel_acesso')->default(0); // 0=Free, 1=Plus, 2=Premium, 3=Admin
+            $table->enum('nivel_acesso', ['0', '1', '2', '3', '4'])->default('0'); // 0=Free, 1=Plus, 2=Premium, 3=Admin, 4=Operacional
             
             // Two-Factor Authentication
             $table->text('two_factor_secret')->nullable();

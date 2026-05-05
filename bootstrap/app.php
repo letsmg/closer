@@ -7,6 +7,7 @@ use App\Http\Middleware\RegistrarAcesso;
 use App\Http\Middleware\UpdateUserOnlineStatus;
 use App\Http\Middleware\HybridAuth;
 use App\Http\Middleware\HybridVerified;
+use App\Http\Middleware\TermsAcceptanceMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -32,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.hybrid' => HybridAuth::class,
             'verified.hybrid' => HybridVerified::class,
             'scope' => \App\Http\Middleware\OAuthScope::class,
+            'level' => \App\Http\Middleware\CheckUserLevel::class,
+            'terms.accepted' => TermsAcceptanceMiddleware::class,
         ]);
 
     })

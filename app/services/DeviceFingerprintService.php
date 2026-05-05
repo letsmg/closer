@@ -2,212 +2,191 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Request;
+use App\Models\User;
+use App\Events\NewDeviceLogin;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
 /**
- * Device Fingerprinting Service
+ * Service para Device Fingerprinting
  * 
- * Detecta logins de novos dispositivos e notifica o usuário.
- * Usa múltiplos fatores para identificar dispositivos únicos.
+ * Responsável por:
+ * - Gerar fingerprints de dispositivos
+ * - Detectar novos dispositivos
+ * - Registrar dispositivos conhecidos
+ * - Enviar notificações de novos dispositivos
  */
 class DeviceFingerprintService
 {
-    /**
-     * Gera fingerprint único do dispositivo
-     */
-    public function generateFingerprint(Request $request): string
-    {
-        $factors = [
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'accept_language' => $request->header('Accept-Language'),
-            'accept_encoding' => $request->header('Accept-Encoding'),
-            'platform' => $this->detectPlatform($request->userAgent()),
-            'screen_info' => $request->header('X-Screen-Info'), // Enviado pelo frontend
-        ];
-
-        // Hash consistente baseado nos fatores
-        return hash('sha256', json_encode($factors));
-    }
+    private const CACHE_TTL = 90 * 24 * 60 * 60; // 90 dias
 
     /**
-     * Verifica se é um novo dispositivo para o usuário
-     */
-    public function isNewDevice(int $userId, string $fingerprint): bool
-    {
-        $knownDevices = Cache::get("user:{$userId}:devices", []);
-        
-        return !in_array($fingerprint, $knownDevices, true);
-    }
-
-    /**
-     * Registra novo dispositivo para o usuário
-     */
-    public function registerDevice(int $userId, string $fingerprint, array $metadata = []): void
-    {
-        $key = "user:{$userId}:devices";
-        $devices = Cache::get($key, []);
-        
-        // Limita a 10 dispositivos por usuário (LRU)
-        if (count($devices) >= 10) {
-            array_shift($devices);
-        }
-        
-        $devices[] = $fingerprint;
-        
-        // Armazena por 90 dias
-        Cache::put($key, $devices, now()->addDays(90));
-        
-        // Salva metadados do dispositivo
-        Cache::put(
-            "device:{$fingerprint}:metadata",
-            array_merge($metadata, [
-                'first_seen' => now()->toIso8601String(),
-                'user_id' => $userId,
-            ]),
-            now()->addDays(90)
-        );
-    }
-
-    /**
-     * Processa login e detecta novos dispositivos
+     * Processa login e verifica dispositivo
      */
     public function processLogin(int $userId, Request $request): array
     {
         $fingerprint = $this->generateFingerprint($request);
-        $isNew = $this->isNewDevice($userId, $fingerprint);
+        $deviceInfo = $this->getDeviceInfo($request);
         
-        $deviceInfo = [
-            'fingerprint' => $fingerprint,
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'platform' => $this->detectPlatform($request->userAgent()),
-            'location' => $this->getLocationFromIp($request->ip()),
-            'timestamp' => now()->toIso8601String(),
-        ];
-
-        if ($isNew) {
-            // Registra novo dispositivo
+        // Verifica se é um novo dispositivo
+        $isNewDevice = $this->isNewDevice($userId, $fingerprint);
+        
+        if ($isNewDevice) {
             $this->registerDevice($userId, $fingerprint, $deviceInfo);
             
             // Dispara evento de novo dispositivo
-            event(new \App\Events\NewDeviceLogin($userId, $deviceInfo));
-            
-            // Log de segurança
-            Log::warning('Novo dispositivo detectado', [
-                'user_id' => $userId,
-                'fingerprint' => $fingerprint,
-                'ip' => $request->ip(),
-            ]);
+            event(new NewDeviceLogin($userId, $deviceInfo));
         }
-
+        
         return [
             'fingerprint' => $fingerprint,
-            'is_new_device' => $isNew,
+            'is_new_device' => $isNewDevice,
+            'requires_verification' => $isNewDevice,
             'device_info' => $deviceInfo,
-            'requires_verification' => $isNew, // Novo dispositivo requer verificação
         ];
     }
 
     /**
-     * Revoga todos os dispositivos de um usuário
+     * Gera fingerprint único do dispositivo
      */
-    public function revokeAllDevices(int $userId): void
+    private function generateFingerprint(Request $request): string
     {
-        Cache::forget("user:{$userId}:devices");
+        $data = [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'accept_language' => $request->header('Accept-Language'),
+            'accept_encoding' => $request->header('Accept-Encoding'),
+        ];
         
-        Log::info('Todos os dispositivos revogados', ['user_id' => $userId]);
+        return hash('sha256', json_encode($data));
+    }
+
+    /**
+     * Extrai informações do dispositivo
+     */
+    private function getDeviceInfo(Request $request): array
+    {
+        $userAgent = $request->userAgent();
+        
+        return [
+            'ip' => $request->ip(),
+            'user_agent' => $userAgent,
+            'platform' => $this->detectPlatform($userAgent),
+            'browser' => $this->detectBrowser($userAgent),
+            'location' => $this->getLocationByIp($request->ip()),
+        ];
+    }
+
+    /**
+     * Verifica se é um novo dispositivo
+     */
+    private function isNewDevice(int $userId, string $fingerprint): bool
+    {
+        $cacheKey = "user_devices:{$userId}";
+        $knownDevices = Cache::get($cacheKey, []);
+        
+        return !in_array($fingerprint, $knownDevices);
+    }
+
+    /**
+     * Registra novo dispositivo
+     */
+    private function registerDevice(int $userId, string $fingerprint, array $deviceInfo): void
+    {
+        $cacheKey = "user_devices:{$userId}";
+        $knownDevices = Cache::get($cacheKey, []);
+        
+        // Adiciona novo fingerprint
+        $knownDevices[] = $fingerprint;
+        
+        // Limita a 50 dispositivos por usuário
+        if (count($knownDevices) > 50) {
+            $knownDevices = array_slice($knownDevices, -50);
+        }
+        
+        Cache::put($cacheKey, $knownDevices, self::CACHE_TTL);
     }
 
     /**
      * Lista dispositivos conhecidos
      */
-    public function listDevices(int $userId): array
+    public function getKnownDevices(int $userId): array
     {
-        $fingerprints = Cache::get("user:{$userId}:devices", []);
-        $devices = [];
-        
-        foreach ($fingerprints as $fp) {
-            $metadata = Cache::get("device:{$fp}:metadata", []);
-            if ($metadata) {
-                $devices[] = [
-                    'fingerprint_short' => substr($fp, 0, 8) . '...',
-                    'platform' => $metadata['platform'] ?? 'Unknown',
-                    'location' => $metadata['location'] ?? 'Unknown',
-                    'ip' => $metadata['ip'] ?? 'Unknown',
-                    'first_seen' => $metadata['first_seen'] ?? null,
-                ];
-            }
-        }
-        
-        return $devices;
+        $cacheKey = "user_devices:{$userId}";
+        return Cache::get($cacheKey, []);
     }
 
     /**
-     * Detecta plataforma do User-Agent
+     * Remove dispositivo específico
      */
-    protected function detectPlatform(?string $userAgent): string
+    public function removeDevice(int $userId, string $fingerprint): bool
     {
-        if (!$userAgent) return 'Unknown';
+        $cacheKey = "user_devices:{$userId}";
+        $knownDevices = Cache::get($cacheKey, []);
         
-        $platforms = [
-            'iPhone' => 'iOS',
-            'iPad' => 'iOS',
-            'Android' => 'Android',
-            'Windows' => 'Windows',
-            'Mac OS X' => 'macOS',
-            'Linux' => 'Linux',
-        ];
+        $key = array_search($fingerprint, $knownDevices);
+        if ($key !== false) {
+            unset($knownDevices[$key]);
+            Cache::put($cacheKey, array_values($knownDevices), self::CACHE_TTL);
+            return true;
+        }
         
-        foreach ($platforms as $pattern => $name) {
-            if (str_contains($userAgent, $pattern)) {
-                return $name;
+        return false;
+    }
+
+    /**
+     * Limpa todos os dispositivos do usuário
+     */
+    public function clearDevices(int $userId): void
+    {
+        $cacheKey = "user_devices:{$userId}";
+        Cache::forget($cacheKey);
+    }
+
+    /**
+     * Detecta plataforma (desktop/mobile/tablet)
+     */
+    private function detectPlatform(string $userAgent): string
+    {
+        if (preg_match('/Mobile|Android|iPhone|iPad/i', $userAgent)) {
+            if (preg_match('/iPad/i', $userAgent)) {
+                return 'tablet';
             }
+            return 'mobile';
+        }
+        
+        return 'desktop';
+    }
+
+    /**
+     * Detecta navegador
+     */
+    private function detectBrowser(string $userAgent): string
+    {
+        if (preg_match('/Chrome/i', $userAgent)) {
+            return 'Chrome';
+        } elseif (preg_match('/Firefox/i', $userAgent)) {
+            return 'Firefox';
+        } elseif (preg_match('/Safari/i', $userAgent)) {
+            return 'Safari';
+        } elseif (preg_match('/Edge/i', $userAgent)) {
+            return 'Edge';
         }
         
         return 'Unknown';
     }
 
     /**
-     * Obtém localização aproximada do IP
+     * Obtém localização por IP (simplificado)
      */
-    protected function getLocationFromIp(string $ip): ?string
+    private function getLocationByIp(string $ip): string
     {
-        // Usar serviço de geolocalização (MaxMind ou similar)
-        // Ou cache de lookups anteriores
-        $cacheKey = "geo:{$ip}";
+        // Em produção, usar serviço como GeoIP2 ou ipinfo.io
+        if ($ip === '127.0.0.1' || $ip === '::1') {
+            return 'Localhost';
+        }
         
-        return Cache::remember($cacheKey, now()->addDay(), function () use ($ip) {
-            try {
-                // Implementação opcional com MaxMind GeoIP2
-                // ou API gratuita como ip-api.com (com rate limiting)
-                return null;
-            } catch (\Exception $e) {
-                return null;
-            }
-        });
-    }
-
-    /**
-     * Verifica se dispositivo está na lista de bloqueados
-     */
-    public function isDeviceBlocked(int $userId, string $fingerprint): bool
-    {
-        $blocked = Cache::get("user:{$userId}:blocked_devices", []);
-        return in_array($fingerprint, $blocked, true);
-    }
-
-    /**
-     * Bloqueia um dispositivo
-     */
-    public function blockDevice(int $userId, string $fingerprint): void
-    {
-        $key = "user:{$userId}:blocked_devices";
-        $blocked = Cache::get($key, []);
-        $blocked[] = $fingerprint;
-        Cache::put($key, $blocked, now()->addDays(365));
+        // Simulação - em produção usar API real
+        return 'Unknown Location';
     }
 }

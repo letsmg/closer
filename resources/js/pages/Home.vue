@@ -1,38 +1,40 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center">
-            <h1 class="text-xl font-bold text-gray-800">Closer</h1>
-          </div>
-          <div class="flex items-center space-x-4">
-            <RouterLink to="/feed" class="text-gray-600 hover:text-gray-900">Feed</RouterLink>
-            <RouterLink to="/matches" class="text-gray-600 hover:text-gray-900">Matches</RouterLink>
-            <RouterLink to="/profile" class="text-gray-600 hover:text-gray-900">Perfil</RouterLink>
-            <button
-              @click="logout"
-              class="text-red-600 hover:text-red-800"
-            >
-              Sair
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
+  <div class="min-h-screen bg-romance-50">
+    <NavigationMenu />
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+          <h2 class="text-2xl font-bold text-romance-900 mb-4">
             Bem-vindo, {{ authStore.user?.name }}!
           </h2>
           <p class="text-gray-600">
             Você está autenticado com segurança usando JWT + OAuth2.
           </p>
-          
+
+          <div class="mt-6 space-y-4">
+            <RouterLink
+              to="/feed"
+              class="inline-block bg-romance-500 hover:bg-romance-600 text-white px-6 py-3 rounded-md font-medium transition-colors"
+            >
+              Ver Feed
+            </RouterLink>
+            <RouterLink
+              to="/matches"
+              class="inline-block bg-romance-500 hover:bg-romance-600 text-white px-6 py-3 rounded-md font-medium transition-colors ml-4"
+            >
+              Meus Matches
+            </RouterLink>
+            <RouterLink
+              to="/profile"
+              class="inline-block bg-romance-400 hover:bg-romance-500 text-white px-6 py-3 rounded-md font-medium transition-colors ml-4"
+            >
+              Editar Perfil
+            </RouterLink>
+          </div>
+
           <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <div class="bg-indigo-50 overflow-hidden shadow rounded-lg">
+            <div class="bg-romance-50 overflow-hidden shadow rounded-lg">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0">
@@ -101,6 +103,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import NavigationMenu from '../components/NavigationMenu.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

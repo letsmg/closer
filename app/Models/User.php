@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Traits\HasUlid;
+use App\Enums\UserLevel;
 
 
 class User extends Authenticatable implements MustVerifyEmail, JWTSubject
@@ -110,9 +111,9 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     */
 
     /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
+     * Get the JWT identifier.
      */
-    public function getJWTIdentifier(): mixed
+    public function getJWTIdentifier(): string
     {
         return $this->getKey();
     }
@@ -123,10 +124,204 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [
-            'email' => $this->email,
-            'name' => $this->name,
-            'nivel' => $this->nivel ?? 0,
+            'uuid' => $this->uuid,
+            'level' => $this->nivel_acesso,
         ];
     }
 
+    /**
+     * --------------------------------------------------------------------------
+     * USER LEVEL METHODS
+     * --------------------------------------------------------------------------
+     */
+
+    /**
+     * Retorna o nível de acesso como enum
+     */
+    public function getLevelAttribute(): UserLevel
+    {
+        return UserLevel::from((int) $this->nivel_acesso);
+    }
+
+    /**
+     * Define o nível de acesso usando enum
+     */
+    public function setLevelAttribute(UserLevel $level): void
+    {
+        $this->attributes['nivel_acesso'] = $level->value;
+    }
+
+    /**
+     * Verifica se o usuário é Free
+     */
+    public function isFree(): bool
+    {
+        return $this->nivel_acesso === UserLevel::FREE->value;
+    }
+
+    /**
+     * Verifica se o usuário é Plus
+     */
+    public function isPlus(): bool
+    {
+        return $this->nivel_acesso === UserLevel::PLUS->value;
+    }
+
+    /**
+     * Verifica se o usuário é Premium
+     */
+    public function isPremium(): bool
+    {
+        return $this->nivel_acesso === UserLevel::PREMIUM->value;
+    }
+
+    /**
+     * Verifica se o usuário é Admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->nivel_acesso === UserLevel::ADMIN->value;
+    }
+
+    /**
+     * Verifica se o usuário é Operacional
+     */
+    public function isOperational(): bool
+    {
+        return $this->nivel_acesso === UserLevel::OPERATIONAL->value;
+    }
+
+    /**
+     * Verifica se tem acesso Plus ou superior
+     */
+    public function hasPlusAccess(): bool
+    {
+        return $this->getLevelAttribute()->hasPlusAccess();
+    }
+
+    /**
+     * Verifica se tem acesso Premium ou superior
+     */
+    public function hasPremiumAccess(): bool
+    {
+        return $this->getLevelAttribute()->hasPremiumAccess();
+    }
+
+    /**
+     * Verifica se é nível administrativo (Admin ou Operacional)
+     */
+    public function isAdminLevel(): bool
+    {
+        return $this->getLevelAttribute()->isAdmin();
+    }
+
+    /**
+     * Verifica se pode gerenciar usuários
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->getLevelAttribute()->canManageUsers();
+    }
+
+    /**
+     * Verifica se pode ver analytics
+     */
+    public function canViewAnalytics(): bool
+    {
+        return $this->getLevelAttribute()->canViewAnalytics();
+    }
+
+    /**
+     * Verifica se pode moderar conteúdo
+     */
+    public function canModerateContent(): bool
+    {
+        return $this->getLevelAttribute()->canModerateContent();
+    }
+
+    /**
+     * Retorna o limite de matches diários
+     */
+    public function getDailyMatchesLimit(): int
+    {
+        return $this->getLevelAttribute()->getDailyMatchesLimit();
+    }
+
+    /**
+     * Retorna o limite de mensagens diárias
+     */
+    public function getDailyMessagesLimit(): int
+    {
+        return $this->getLevelAttribute()->getDailyMessagesLimit();
+    }
+
+    /**
+     * Verifica se pode usar Shorts
+     */
+    public function canUseShorts(): bool
+    {
+        return $this->getLevelAttribute()->canUseShorts();
+    }
+
+    /**
+     * Verifica se pode ver quem deu like
+     */
+    public function canViewLikes(): bool
+    {
+        return $this->getLevelAttribute()->canViewLikes();
+    }
+
+    /**
+     * Verifica se pode usar filtros avançados
+     */
+    public function canUseAdvancedFilters(): bool
+    {
+        return $this->getLevelAttribute()->canUseAdvancedFilters();
+    }
+
+    /**
+     * Verifica se pode ter perfil verificado
+     */
+    public function canHaveVerifiedProfile(): bool
+    {
+        return $this->getLevelAttribute()->canHaveVerifiedProfile();
+    }
+
+    /**
+     * Scope para filtrar por nível específico
+     */
+    public function scopeByLevel($query, UserLevel $level)
+    {
+        return $query->where('nivel_acesso', $level->value);
+    }
+
+    /**
+     * Scope para filtrar usuários pagos (Plus e Premium)
+     */
+    public function scopePaid($query)
+    {
+        return $query->whereIn('nivel_acesso', [
+            UserLevel::PLUS->value,
+            UserLevel::PREMIUM->value,
+        ]);
+    }
+
+    /**
+     * Scope para filtrar administrativos
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->whereIn('nivel_acesso', [
+            UserLevel::ADMIN->value,
+            UserLevel::OPERATIONAL->value,
+        ]);
+    }
+
+    /**
+     * Scope para usuários gratuitos
+     */
+    public function scopeFree($query)
+    {
+        return $query->where('nivel_acesso', UserLevel::FREE->value);
+    }
 }

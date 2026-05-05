@@ -21,8 +21,14 @@ class RegisterRequest extends SanitizedRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|max:255|confirmed',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).+$/',
+            ],
             'password_confirmation' => 'required|string|min:8|max:255',
         ];
     }
@@ -36,11 +42,18 @@ class RegisterRequest extends SanitizedRequest
             'name.required' => 'O nome é obrigatório.',
             'name.max' => 'O nome não pode ter mais de 255 caracteres.',
             'email.required' => 'O email é obrigatório.',
-            'email.email' => 'Digite um email válido.',
-            'email.unique' => 'Este email já está em uso.',
+            'email.email' => 'O email deve ser válido.',
+            'email.max' => 'O email não pode ter mais de 255 caracteres.',
+            'email.unique' => 'Este email já está cadastrado.',
             'password.required' => 'A senha é obrigatória.',
+            'password.string' => 'A senha deve ser um texto.',
             'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
-            'password.confirmed' => 'As senhas não coincidem.',
+            'password.confirmed' => 'A confirmação de senha não confere.',
+            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula e 1 caractere especial (!@#$%^&*()).',
+            'password_confirmation.required' => 'A confirmação de senha é obrigatória.',
+            'password_confirmation.string' => 'A confirmação de senha deve ser um texto.',
+            'password_confirmation.min' => 'A confirmação de senha deve ter pelo menos 8 caracteres.',
+            'password_confirmation.max' => 'A confirmação de senha não pode ter mais de 255 caracteres.',
         ];
     }
 

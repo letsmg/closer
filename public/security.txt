@@ -1,0 +1,107 @@
+# Closer Security Policy
+# Last Updated: {{ date('Y-m-d') }}
+
+## Security Measures Implemented
+
+### 1. Legal Framework
+- Governed by Wyoming State Law (blockchain/digital assets)
+- Governed by Delaware State Law (corporate matters)
+- Federal District Court jurisdiction for interstate commerce
+
+### 2. Geographic Restrictions
+- Target regions: Southeast Asia and Middle East
+- VPN usage: Not permitted from unauthorized regions
+- Account termination for VPN bypass attempts
+
+### 3. Data Protection
+- GDPR compliance for European users
+- PDPA compliance for Southeast Asian users
+- Personal Data Protection Laws for Middle Eastern users
+- ISO 27001 information security standards
+- End-to-end encryption for sensitive communications
+
+### 4. Access Control
+- Multi-factor authentication (MFA)
+- KYC verification requirements
+- AML compliance monitoring
+- Regular security audits
+- Penetration testing
+
+### 5. Platform Protection
+- XSS protection headers
+- Clickjacking prevention
+- MIME-type sniffing prevention
+- Content Security Policy (CSP)
+- Referrer Policy controls
+- Permissions Policy restrictions
+
+### 6. Monitoring & Detection
+- Suspicious activity detection
+- Automated bot prevention
+- Rate limiting implementation
+- IP reputation checking
+- Geographic location verification
+
+### 7. Incident Response
+- 24/7 security monitoring
+- Immediate incident response team
+- Law enforcement cooperation
+- Regulatory authority notifications
+- User notification protocols
+
+## Reporting Security Issues
+
+For security vulnerabilities or concerns:
+- Email: security@closer.com
+- Response time: Within 24 hours
+- Bug bounty program available
+
+## Legal Compliance
+
+We comply with:
+- General Data Protection Regulation (GDPR)
+- Personal Data Protection Act (PDPA) - Southeast Asia
+- Anti-Money Laundering (AML) regulations
+- Know Your Customer (KYC) requirements
+- Local data protection laws in target regions
+
+## User Responsibilities
+
+Users must:
+- Verify their identity accurately
+- Use service from authorized regions only
+- Report suspicious activities
+- Maintain account security
+- Comply with local laws
+
+## Prohibited Activities
+
+- Accessing from unauthorized regions via VPN
+- Automated account creation or manipulation
+- Fraudulent identity verification
+- Money laundering activities
+- Harassment or abuse of other users
+- Distribution of malware or harmful content
+- Attempts to breach system security
+
+## Enforcement
+
+Violations may result in:
+- Immediate account suspension
+- Permanent account termination
+- Legal action if necessary
+- Reporting to authorities
+- IP address blocking
+
+## Contact Information
+
+Legal Department:
+- Email: legal@closer.com
+- Address: 1234 Tech Street, Cheyenne, WY 82001, USA
+- Registered Agent: Delaware Registered Agent Services, Wilmington, DE 19801, USA
+
+Security Team:
+- Email: security@closer.com
+- Emergency: security-urgent@closer.com
+
+This security policy is part of our Terms of Service and is legally binding.

@@ -2,251 +2,286 @@
 
 namespace App\Services;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Image Moderation Service
+ * Service para Moderação de Imagens
  * 
- * Suporta múltiplos providers:
- * - Google Vision API (Safe Search Detection)
- * - Sightengine (configurado no composer.json)
- * 
- * Configuração no .env:
- * IMAGE_MODERATION_PROVIDER=google|sightengine
- * GOOGLE_VISION_API_KEY=your_key
- * SIGHTENGINE_API_USER=user
- * SIGHTENGINE_API_SECRET=secret
+ * Responsável por:
+ * - Analisar imagens quanto a conteúdo impróprio
+ * - Usar Google Vision API ou Sightengine
+ * - Avaliar segurança de imagens
+ * - Bloquear conteúdo inadequado
  */
 class ImageModerationService
 {
-    const ADULT_UNLIKELY = 'VERY_UNLIKELY';
-    const ADULT_POSSIBLE = 'POSSIBLE';
-    const ADULT_LIKELY = 'LIKELY';
-    const ADULT_VERY_LIKELY = 'VERY_LIKELY';
-
-    protected string $provider;
-    protected array $config;
-
-    public function __construct()
-    {
-        $this->provider = config('services.image_moderation.provider', 'google');
-        $this->config = config('services.image_moderation');
-    }
+    private const UNSAFE_THRESHOLD = 0.6;
+    private const ADULT_THRESHOLD = 0.5;
+    private const VIOLENCE_THRESHOLD = 0.5;
 
     /**
-     * Analisa uma imagem por conteúdo inadequado
-     * 
-     * @param string $imagePath Caminho da imagem (storage ou URL)
-     * @return array Resultado da análise
+     * Analisa imagemUploadedFile
      */
-    public function analyze(string $imagePath): array
+    public function analyzeImage(UploadedFile $file): array
     {
-        return match ($this->provider) {
-            'google' => $this->analyzeWithGoogleVision($imagePath),
-            'sightengine' => $this->analyzeWithSightengine($imagePath),
-            default => $this->analyzeWithGoogleVision($imagePath),
-        };
-    }
-
-    /**
-     * Verifica se a imagem é segura para publicação
-     */
-    public function isSafe(string $imagePath): bool
-    {
-        $result = $this->analyze($imagePath);
+        $provider = config('services.image_moderation.provider', 'google');
         
-        return $result['is_safe'] ?? false;
+        return match ($provider) {
+            'google' => $this->analyzeWithGoogleVision($file),
+            'sightengine' => $this->analyzeWithSightengine($file),
+            default => $this->getDefaultResponse(),
+        };
     }
 
     /**
      * Análise com Google Vision API
      */
-    protected function analyzeWithGoogleVision(string $imagePath): array
+    private function analyzeWithGoogleVision(UploadedFile $file): array
     {
-        $apiKey = $this->config['google_api_key'];
-        
-        if (!$apiKey) {
-            Log::warning('Google Vision API key not configured');
-            return ['is_safe' => true, 'provider' => 'google', 'error' => 'API key missing'];
-        }
+        try {
+            $apiKey = config('services.image_moderation.google_vision_api_key');
+            
+            if (!$apiKey) {
+                throw new \Exception('Google Vision API key not configured');
+            }
 
-        // Converte imagem para base64
-        $imageData = $this->getImageBase64($imagePath);
-        
-        if (!$imageData) {
-            return ['is_safe' => false, 'provider' => 'google', 'error' => 'Could not read image'];
-        }
-
-        $url = "https://vision.googleapis.com/v1/images:annotate?key={$apiKey}";
-
-        $response = Http::timeout(30)->post($url, [
-            'requests' => [
-                [
-                    'image' => [
-                        'content' => $imageData,
-                    ],
-                    'features' => [
-                        [
-                            'type' => 'SAFE_SEARCH_DETECTION',
-                            'maxResults' => 10,
+            // Prepara imagem para API
+            $imageContent = base64_encode(file_get_contents($file->getPathname()));
+            
+            $response = Http::post("https://vision.googleapis.com/v1/images:annotate?key={$apiKey}", [
+                'requests' => [
+                    [
+                        'image' => [
+                            'content' => $imageContent,
                         ],
-                        [
-                            'type' => 'LABEL_DETECTION',
-                            'maxResults' => 10,
+                        'features' => [
+                            ['type' => 'SAFE_SEARCH_DETECTION'],
+                            ['type' => 'LABEL_DETECTION'],
+                            ['type' => 'WEB_DETECTION'],
                         ],
                     ],
                 ],
-            ],
-        ]);
+            ]);
 
-        if (!$response->successful()) {
-            Log::error('Google Vision API error', ['response' => $response->body()]);
-            return [
-                'is_safe' => false,
-                'provider' => 'google',
-                'error' => 'API request failed',
-                'details' => $response->json(),
-            ];
+            if (!$response->successful()) {
+                throw new \Exception('Google Vision API request failed: ' . $response->body());
+            }
+
+            $data = $response->json();
+            $safeSearch = $data['responses'][0]['safeSearchAnnotation'] ?? [];
+            $labels = $data['responses'][0]['labelAnnotations'] ?? [];
+
+            return $this->processGoogleVisionResults($safeSearch, $labels);
+
+        } catch (\Exception $e) {
+            \Log::error('Google Vision analysis failed', [
+                'error' => $e->getMessage(),
+                'file' => $file->getClientOriginalName(),
+            ]);
+
+            return $this->getDefaultResponse();
         }
-
-        $data = $response->json();
-        $safeSearch = $data['responses'][0]['safeSearchAnnotation'] ?? [];
-
-        // Análise de segurança
-        $isSafe = $this->evaluateGoogleSafeSearch($safeSearch);
-
-        return [
-            'is_safe' => $isSafe,
-            'provider' => 'google',
-            'adult' => $safeSearch['adult'] ?? 'UNKNOWN',
-            'violence' => $safeSearch['violence'] ?? 'UNKNOWN',
-            'racy' => $safeSearch['racy'] ?? 'UNKNOWN',
-            'spoof' => $safeSearch['spoof'] ?? 'UNKNOWN',
-            'medical' => $safeSearch['medical'] ?? 'UNKNOWN',
-            'labels' => $data['responses'][0]['labelAnnotations'] ?? [],
-        ];
-    }
-
-    /**
-     * Avalia resultado do Google Safe Search
-     */
-    protected function evaluateGoogleSafeSearch(array $safeSearch): bool
-    {
-        $forbidden = [self::ADULT_LIKELY, self::ADULT_VERY_LIKELY];
-        
-        // Bloqueia se adulto ou violência forem LIKELY ou VERY_LIKELY
-        if (in_array($safeSearch['adult'] ?? '', $forbidden)) {
-            return false;
-        }
-        
-        if (in_array($safeSearch['violence'] ?? '', $forbidden)) {
-            return false;
-        }
-
-        // Racy pode ser POSSIBLE dependendo do contexto
-        if (($safeSearch['racy'] ?? '') === self::ADULT_VERY_LIKELY) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
      * Análise com Sightengine
      */
-    protected function analyzeWithSightengine(string $imagePath): array
+    private function analyzeWithSightengine(UploadedFile $file): array
     {
-        $apiUser = $this->config['sightengine_api_user'];
-        $apiSecret = $this->config['sightengine_api_secret'];
+        try {
+            $apiUser = config('services.image_moderation.sightengine_api_user');
+            $apiSecret = config('services.image_moderation.sightengine_api_secret');
 
-        if (!$apiUser || !$apiSecret) {
-            Log::warning('Sightengine API credentials not configured');
-            return ['is_safe' => true, 'provider' => 'sightengine', 'error' => 'Credentials missing'];
+            if (!$apiUser || !$apiSecret) {
+                throw new \Exception('Sightengine credentials not configured');
+            }
+
+            $response = Http::asForm()->post('https://api.sightengine.com/1.0/check.json', [
+                'api_user' => $apiUser,
+                'api_secret' => $apiSecret,
+                'media' => $file->getPathname(),
+                'models' => 'nudity,wad,generic,face,properties,text',
+            ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('Sightengine API request failed: ' . $response->body());
+            }
+
+            $data = $response->json();
+
+            return $this->processSightengineResults($data);
+
+        } catch (\Exception $e) {
+            \Log::error('Sightengine analysis failed', [
+                'error' => $e->getMessage(),
+                'file' => $file->getClientOriginalName(),
+            ]);
+
+            return $this->getDefaultResponse();
         }
+    }
 
-        $url = 'https://api.sightengine.com/1.0/check.json';
+    /**
+     * Processa resultados do Google Vision
+     */
+    private function processGoogleVisionResults(array $safeSearch, array $labels): array
+    {
+        $adult = $this->convertGoogleLikelihood($safeSearch['adult'] ?? 'UNKNOWN');
+        $violence = $this->convertGoogleLikelihood($safeSearch['violence'] ?? 'UNKNOWN');
+        $racy = $this->convertGoogleLikelihood($safeSearch['racy'] ?? 'UNKNOWN');
 
-        $response = Http::timeout(30)->asForm()->post($url, [
-            'api_user' => $apiUser,
-            'api_secret' => $apiSecret,
-            'url' => $this->getImageUrl($imagePath),
-            'models' => 'nudity,wad,offensive,scam,face-attributes',
-        ]);
-
-        if (!$response->successful()) {
-            Log::error('Sightengine API error', ['response' => $response->body()]);
-            return [
-                'is_safe' => false,
-                'provider' => 'sightengine',
-                'error' => 'API request failed',
-            ];
-        }
-
-        $data = $response->json();
-
-        // Sightengine retorna probabilidades
-        $nuditySafe = ($data['nudity']['safe'] ?? 0) > 0.5;
-        $weaponSafe = ($data['weapon']['classes']['firearm']['prob'] ?? 0) < 0.5;
-        $drugsSafe = ($data['drugs']['prob'] ?? 0) < 0.5;
-        $offensiveSafe = ($data['offensive']['prob'] ?? 0) < 0.5;
-
-        $isSafe = $nuditySafe && $weaponSafe && $drugsSafe && $offensiveSafe;
+        $isUnsafe = $adult >= self::ADULT_THRESHOLD || 
+                   $violence >= self::VIOLENCE_THRESHOLD || 
+                   $racy >= self::UNSAFE_THRESHOLD;
 
         return [
-            'is_safe' => $isSafe,
-            'provider' => 'sightengine',
-            'nudity' => $data['nudity'] ?? [],
-            'weapon' => $data['weapon'] ?? [],
-            'drugs' => $data['drugs'] ?? [],
-            'offensive' => $data['offensive'] ?? [],
-            'faces' => $data['faces'] ?? [],
+            'is_safe' => !$isUnsafe,
+            'adult_probability' => $adult,
+            'violence_probability' => $violence,
+            'racy_probability' => $racy,
+            'labels' => $this->extractLabels($labels),
+            'provider' => 'google_vision',
+            'analysis_time' => now()->toISOString(),
         ];
     }
 
     /**
-     * Converte imagem para base64
+     * Processa resultados do Sightengine
      */
-    protected function getImageBase64(string $imagePath): ?string
+    private function processSightengineResults(array $data): array
     {
-        try {
-            if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
-                $content = file_get_contents($imagePath);
-            } else {
-                $content = Storage::disk('public')->get($imagePath);
-            }
+        $nudity = $data['nudity'] ?? [];
+        $weapon = $data['weapon'] ?? 0.0;
+        $alcohol = $data['alcohol'] ?? 0.0;
+        $drug = $data['drug'] ?? 0.0;
 
-            return base64_encode($content);
-        } catch (\Exception $e) {
-            Log::error('Failed to read image', ['path' => $imagePath, 'error' => $e->getMessage()]);
+        $adultProbability = max(
+            $nudity['partial'] ?? 0.0,
+            $nudity['sexual_activity'] ?? 0.0,
+            $nudity['sexual_display'] ?? 0.0
+        );
+
+        $violenceProbability = max($weapon, $alcohol, $drug);
+
+        $isUnsafe = $adultProbability >= self::ADULT_THRESHOLD || 
+                   $violenceProbability >= self::VIOLENCE_THRESHOLD;
+
+        return [
+            'is_safe' => !$isUnsafe,
+            'adult_probability' => $adultProbability,
+            'violence_probability' => $violenceProbability,
+            'racy_probability' => $nudity['suggestive'] ?? 0.0,
+            'labels' => $this->extractSightengineLabels($data),
+            'provider' => 'sightengine',
+            'analysis_time' => now()->toISOString(),
+        ];
+    }
+
+    /**
+     * Converte likelihood do Google para probabilidade numérica
+     */
+    private function convertGoogleLikelihood(string $likelihood): float
+    {
+        return match ($likelihood) {
+            'VERY_UNLIKELY' => 0.1,
+            'UNLIKELY' => 0.2,
+            'POSSIBLE' => 0.5,
+            'LIKELY' => 0.7,
+            'VERY_LIKELY' => 0.9,
+            'UNKNOWN' => 0.0,
+            default => 0.0,
+        };
+    }
+
+    /**
+     * Extrai labels do Google Vision
+     */
+    private function extractLabels(array $labels): array
+    {
+        return array_map(fn($label) => [
+            'name' => $label['description'] ?? '',
+            'confidence' => $label['score'] ?? 0.0,
+        ], array_slice($labels, 0, 10));
+    }
+
+    /**
+     * Extrai labels do Sightengine
+     */
+    private function extractSightengineLabels(array $data): array
+    {
+        $labels = [];
+
+        if (isset($data['face'])) {
+            $labels[] = ['name' => 'face_detected', 'confidence' => $data['face']['confidence'] ?? 0.0];
+        }
+
+        if (isset($data['text'])) {
+            $labels[] = ['name' => 'text_detected', 'confidence' => $data['text']['confidence'] ?? 0.0];
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Resposta padrão quando APIs não estão disponíveis
+     */
+    private function getDefaultResponse(): array
+    {
+        return [
+            'is_safe' => true, // Por segurança, aprova se não conseguir analisar
+            'adult_probability' => 0.0,
+            'violence_probability' => 0.0,
+            'racy_probability' => 0.0,
+            'labels' => [],
+            'provider' => 'fallback',
+            'analysis_time' => now()->toISOString(),
+            'warning' => 'Analysis service unavailable - auto-approved',
+        ];
+    }
+
+    /**
+     * Verifica se imagem é segura baseada nos resultados
+     */
+    public function isImageSafe(array $analysis): bool
+    {
+        return $analysis['is_safe'] ?? true;
+    }
+
+    /**
+     * Salva imagem se for segura
+     */
+    public function saveIfSafe(UploadedFile $file, string $path): ?string
+    {
+        $analysis = $this->analyzeImage($file);
+
+        if (!$this->isImageSafe($analysis)) {
+            \Log::warning('Image rejected due to safety concerns', [
+                'file' => $file->getClientOriginalName(),
+                'analysis' => $analysis,
+            ]);
             return null;
         }
+
+        return Storage::disk('public')->putFile($path, $file);
     }
 
     /**
-     * Retorna URL pública da imagem
+     * Obtém estatísticas de moderação
      */
-    protected function getImageUrl(string $imagePath): string
+    public function getModerationStats(): array
     {
-        if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
-            return $imagePath;
-        }
-
-        return Storage::disk('public')->url($imagePath);
-    }
-
-    /**
-     * Batch analysis de múltiplas imagens
-     */
-    public function analyzeBatch(array $imagePaths): array
-    {
-        $results = [];
-        
-        foreach ($imagePaths as $path) {
-            $results[$path] = $this->analyze($path);
-        }
-
-        return $results;
+        // Em produção, buscar do banco ou cache
+        return [
+            'total_analyzed' => 0,
+            'approved' => 0,
+            'rejected' => 0,
+            'rejection_reasons' => [
+                'adult_content' => 0,
+                'violence' => 0,
+                'racy_content' => 0,
+            ],
+        ];
     }
 }

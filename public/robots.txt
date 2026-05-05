@@ -1,2 +1,48 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap
+Sitemap: https://closer.com/sitemap.xml
+
+# Block common non-content areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /storage/
+Disallow: /vendor/
+Disallow: /bootstrap/
+Disallow: /config/
+Disallow: /database/
+Disallow: /resources/
+Disallow: /routes/
+Disallow: /tests/
+Disallow: /artisan
+Disallow: /.env
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /webpack.mix.js
+Disallow: /vite.config.js
+Disallow: /tailwind.config.js
+Disallow: /phpunit.xml
+Disallow: /.git
+Disallow: /.gitignore
+
+# Block temporary and cache files
+Disallow: /storage/app/cache/
+Disallow: /storage/framework/cache/
+Disallow: /storage/framework/sessions/
+Disallow: /storage/framework/views/
+Disallow: /storage/logs/
+
+# Block development endpoints
+Disallow: /_debugbar/
+Disallow: /telescope/
+Disallow: /horizon/
+
+# Allow specific API endpoints for search engines (optional)
+# Allow: /api/public/users
+# Allow: /api/public/profiles
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
