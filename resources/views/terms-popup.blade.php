@@ -1,85 +1,265 @@
-<div id="terms-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl">
-            <!-- Header -->
-            <div class="sticky top-0 bg-white border-b border-gray-200 p-6">
-                <h2 class="text-2xl font-bold text-gray-900">Terms of Service</h2>
-                <p class="text-sm text-gray-600 mt-2">You must accept these terms to continue using Closer</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLOSER - Terms of Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hover-scale {
+            transition: all 0.3s ease;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        .custom-checkbox {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .custom-checkbox:checked {
+            background: #3498db;
+            border-color: #3498db;
+        }
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -2px;
+            left: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- CLOSER Header -->
+    <div class="absolute top-6 left-0 right-0 text-center">
+        <h1 class="text-5xl font-bold text-white mb-2">CLOSER</h1>
+        <p class="text-white text-lg opacity-90">Connect. Match. Meet.</p>
+    </div>
+
+    <!-- Main Modal Container -->
+    <div id="terms-modal" class="glass-effect rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto animate-fade-in mt-20">
+        <!-- Modal Header -->
+        <div class="sticky top-0 glass-effect border-b border-gray-200 p-6 rounded-t-2xl z-10">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Terms of Service & Privacy Policy</h2>
+                <p class="text-gray-600">Please read and accept to continue</p>
+                <p class="text-sm text-gray-500 mt-1">Last Updated: May 5, 2026</p>
+            </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6">
+            <!-- Important Notice -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 p-4 rounded-xl mb-6">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-6 h-6 text-blue-600 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 002h1a1 1 0 002-2V9a1 1 0 00-2-2H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-800 mb-1">IMPORTANT NOTICE</h3>
+                        <p class="text-blue-700 text-sm">
+                            By using CLOSER, you agree to these terms and acknowledge that you have read, understood, and agree to be bound by them.
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Content -->
-            <div class="p-6">
-                <!-- Important Notice -->
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                    <p class="font-semibold text-yellow-800">
-                        <strong>IMPORTANT NOTICE:</strong> By using Closer, you agree to these terms and acknowledge that you have read, understood, and agree to be bound by them.
-                    </p>
+            <!-- Quick Summary Section -->
+            <div class="bg-white rounded-xl p-5 mb-6 border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2v2a1 1 0 002 2h2a1 1 0 002-2V4a1 1 0 00-2-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586A1 1 0 0013 5H4z" clip-rule="evenodd"/>
+                    </svg>
+                    Quick Summary
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-lg">
+                        <h4 class="font-semibold text-blue-900 mb-1 text-sm">🌍 Geographic Focus</h4>
+                        <p class="text-blue-700 text-xs">Southeast Asia & Middle East users only</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-3 rounded-lg">
+                        <h4 class="font-semibold text-purple-900 mb-1 text-sm">⚖️ Legal Framework</h4>
+                        <p class="text-purple-700 text-xs">Wyoming & Delaware jurisdiction</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg">
+                        <h4 class="font-semibold text-green-900 mb-1 text-sm">🔐 Security</h4>
+                        <p class="text-green-700 text-xs">2FA authentication & content moderation</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-3 rounded-lg">
+                        <h4 class="font-semibold text-yellow-900 mb-1 text-sm">🛡️ Content Policy</h4>
+                        <p class="text-yellow-700 text-xs">Removal without notice for reports</p>
+                    </div>
                 </div>
 
-                <!-- Governing Law -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3">1. Governing Law and Jurisdiction</h3>
-                    <p class="text-gray-700 mb-3">These Terms of Service are governed by and construed in accordance with laws of the State of Wyoming, United States, and State of Delaware, United States.</p>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                        <li>Wyoming State Courts for matters related to blockchain and digital asset regulations</li>
-                        <li>Delaware Court of Chancery for corporate and business disputes</li>
-                        <li>Federal District Courts for matters involving interstate commerce</li>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-2 text-sm">📋 Key Points</h4>
+                    <ul class="space-y-2 text-gray-700 text-sm">
+                        <li class="flex items-start">
+                            <span class="text-blue-600 mr-2">✓</span>
+                            <span><strong>Age Requirement:</strong> 18+ only</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-600 mr-2">✓</span>
+                            <span><strong>VPN Policy:</strong> Access from unauthorized regions may result in termination</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-600 mr-2">✓</span>
+                            <span><strong>Content Removal:</strong> We can remove content without prior notice based on reports</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-600 mr-2">✓</span>
+                            <span><strong>Data Protection:</strong> GDPR & PDPA compliant</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-600 mr-2">✓</span>
+                            <span><strong>Liability:</strong> Users are responsible for their interactions and content</span>
+                        </li>
                     </ul>
                 </div>
+            </div>
 
-                <!-- Geographic Scope -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3">2. Geographic Scope and Target Users</h3>
-                    <p class="text-gray-700 mb-3">Closer is specifically designed and intended for users located in:</p>
-                    <div class="grid md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <h4 class="font-semibold text-gray-900">Southeast Asian Countries:</h4>
-                            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4 text-sm">
-                                <li>Singapore, Malaysia, Thailand</li>
-                                <li>Indonesia, Philippines, Vietnam</li>
-                                <li>Myanmar, Cambodia, Laos, Brunei</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-900">Middle Eastern Countries:</h4>
-                            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4 text-sm">
-                                <li>UAE, Saudi Arabia, Qatar, Kuwait</li>
-                                <li>Bahrain, Oman, Jordan, Lebanon</li>
-                                <li>Egypt, Iraq, Iran, Israel, Turkey</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="bg-red-50 border-l-4 border-red-400 p-4">
-                        <p class="font-semibold text-red-800">
-                            <strong>VPN Policy:</strong> Closer does not accept responsibility for users accessing the service from outside the designated geographic regions through VPN or other masking technologies. Users who bypass geographic restrictions do so at their own risk and may have their accounts terminated without notice.
+            <!-- Full Terms Link -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border-l-4 border-indigo-500 p-4 rounded-xl mb-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h4 class="text-lg font-semibold text-indigo-900 mb-1">📄 Complete Terms Available</h4>
+                        <p class="text-indigo-700 text-xs">
+                            Read the full Terms of Service and Privacy Policy for detailed information
                         </p>
                     </div>
+                    <a href="/terms-full" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors hover-scale inline-flex items-center text-sm whitespace-nowrap">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M11 3a1 1 0 100-2H1a1 1 0 100 2h10zm4 0a1 1 0 100-2H8a1 1 0 100 2h7z"/>
+                            <path fill-rule="evenodd" d="M3 7a1 1 0 00-1 1v7a1 1 0 102 0V8a1 1 0 00-1-1zm6-4a1 1 0 00-1 1v11a1 1 0 102 0V4a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Read Full Terms
+                    </a>
                 </div>
+            </div>
 
-                <!-- Content Removal -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3">3. Content Removal and Moderation</h3>
-                    <p class="text-gray-700 mb-3">Closer reserves the right to remove any content without prior notice when:</p>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                        <li>We receive a report from another user regarding the content</li>
-                        <li>The content is deemed suspicious or potentially harmful</li>
-                        <li>The content violates these terms of service</li>
-                        <li>The content is illegal, offensive, or inappropriate</li>
-                        <li>There is reasonable belief that the content may cause harm</li>
-                    </ul>
-                    <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mt-3">
-                        <p class="font-semibold text-orange-800">
-                            <strong>No Warning Required:</strong> Closer is not obligated to provide a warning before content removal. We may remove content at our sole discretion to protect the safety and integrity of the platform.
-                        </p>
+            <!-- Acceptance Checkbox and Buttons -->
+            <div class="bg-white rounded-xl p-5 border border-gray-200">
+                <form id="termsForm" class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <input type="checkbox" id="acceptTerms" class="custom-checkbox mt-1" required>
+                        <label for="acceptTerms" class="text-gray-700 cursor-pointer select-none flex-1">
+                            <strong class="text-base">I have read and agree to the Terms of Service and Privacy Policy</strong>
+                            <p class="text-xs text-gray-600 mt-1">
+                                By checking this box, you confirm that you have read, understood, and agree to be bound by the CLOSER Terms of Service and Privacy Policy, including the content removal policy and geographic restrictions.
+                            </p>
+                        </label>
                     </div>
-                </div>
 
-                <!-- User Responsibilities -->
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3">4. User Responsibilities</h3>
-                    <p class="text-gray-700 mb-3">Users are solely responsible for:</p>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-                        <li>Content posted, shared, or transmitted through the service</li>
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all hover-scale shadow-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            Accept & Continue
+                        </button>
+                        <button type="button" onclick="declineTerms()" class="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-xl transition-all hover-scale shadow-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Decline
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="glass-effect border-t border-gray-200 p-4 rounded-b-2xl">
+            <div class="text-center">
+                <p class="text-gray-600 text-sm mb-1">
+                    Need help? Contact us at <a href="mailto:support@closer.com" class="text-blue-600 hover:text-blue-800 font-semibold">support@closer.com</a>
+                </p>
+                <p class="text-gray-500 text-xs">
+                    © 2026 CLOSER. All rights reserved. | 
+                    <a href="/privacy" class="text-blue-600 hover:text-blue-800">Privacy Policy</a> | 
+                    <a href="/security" class="text-blue-600 hover:text-blue-800">Security Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Terms Acceptance -->
+    <script>
+        function acceptTerms() {
+            const checkbox = document.getElementById('acceptTerms');
+            
+            if (!checkbox.checked) {
+                alert('Please check the box to accept the terms before continuing.');
+                return false;
+            }
+
+            // Store acceptance in localStorage
+            localStorage.setItem('termsAccepted', 'true');
+            localStorage.setItem('termsAcceptedDate', new Date().toISOString());
+            
+            // Set cookie for server-side verification
+            document.cookie = 'terms_accepted=true; path=/; max-age=31536000; SameSite=Lax';
+            
+            // Redirect to intended destination or login
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect') || '/login';
+            window.location.href = redirect;
+        }
+
+        function declineTerms() {
+            if (confirm('Are you sure you want to decline? You will be redirected away from CLOSER.')) {
+                window.location.href = 'https://www.google.com';
+            }
+        }
+
+        // Check if user already accepted terms
+        window.onload = function() {
+            if (localStorage.getItem('termsAccepted') === 'true') {
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect') || '/login';
+                window.location.href = redirect;
+            }
+        };
+
+        // Form submission handler
+        document.getElementById('termsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            acceptTerms();
+        });
+    </script>
+</body>
+</html>
                         <li>Interactions with other users</li>
                         <li>Verification of user identities and information</li>
                         <li>Compliance with local laws and regulations</li>

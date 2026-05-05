@@ -28,8 +28,8 @@ class UserSeeder extends Seeder
     {
         // Usuário Admin Principal
         User::create([
-            'name' => 'Administrador Principal',
-            'email' => '1@1.com',
+            'name' => 'Administrator Principal',
+            'email' => 'admin@1.com',
             'password' => Hash::make('Mudar@123'),
             'nivel_acesso' => UserLevel::ADMIN->value,
             'email_verified_at' => now(),
@@ -39,8 +39,8 @@ class UserSeeder extends Seeder
 
         // Usuário Operacional
         User::create([
-            'name' => 'Operador do Sistema',
-            'email' => '2@2.com',
+            'name' => 'System Operator',
+            'email' => 'operator@2.com',
             'password' => Hash::make('Mudar@123'),
             'nivel_acesso' => UserLevel::OPERATIONAL->value,
             'email_verified_at' => now(),
@@ -56,11 +56,7 @@ class UserSeeder extends Seeder
     {
         // Usuários FREE (nível 0) - 5 usuários
         $freeUsers = [
-            ['Ana Silva', 'ana.free@closer.com'],
-            ['Carlos Santos', 'carlos.free@closer.com'],
-            ['Mariana Costa', 'mariana.free@closer.com'],
-            ['Pedro Oliveira', 'pedro.free@closer.com'],
-            ['Lucas Ferreira', 'lucas.free@closer.com'],
+            ['Free User', 'free@closer.com'],
         ];
 
         foreach ($freeUsers as [$name, $email]) {
@@ -77,10 +73,7 @@ class UserSeeder extends Seeder
 
         // Usuários PLUS (nível 1) - 4 usuários
         $plusUsers = [
-            ['Roberto Almeida', 'roberto.plus@closer.com'],
-            ['Fernanda Lima', 'fernanda.plus@closer.com'],
-            ['Gustavo Gomes', 'gustavo.plus@closer.com'],
-            ['Camila Dias', 'camila.plus@closer.com'],
+            ['Plus User', 'plus@closer.com'],
         ];
 
         foreach ($plusUsers as [$name, $email]) {
@@ -97,10 +90,7 @@ class UserSeeder extends Seeder
 
         // Usuários PREMIUM (nível 2) - 4 usuários
         $premiumUsers = [
-            ['Ricardo Mendes', 'ricardo.premium@closer.com'],
-            ['Patricia Castro', 'patricia.premium@closer.com'],
-            ['Bruno Carvalho', 'bruno.premium@closer.com'],
-            ['Tatiane Ribeiro', 'tatiane.premium@closer.com'],
+            ['Premium User', 'premium@closer.com'],
         ];
 
         foreach ($premiumUsers as [$name, $email]) {
@@ -135,19 +125,19 @@ class UserSeeder extends Seeder
                 ],
             ],
             'free_users' => [
-                'emails' => ['ana.free@closer.com', 'carlos.free@closer.com', 'mariana.free@closer.com', 'pedro.free@closer.com', 'lucas.free@closer.com'],
+                'emails' => ['free@closer.com'],
                 'password' => 'Mudar@123',
                 'level' => 'Free (0)',
-                'count' => 5,
+                'count' => 1,
             ],
             'plus_users' => [
-                'emails' => ['roberto.plus@closer.com', 'fernanda.plus@closer.com', 'gustavo.plus@closer.com', 'camila.plus@closer.com'],
+                'emails' => ['plus@closer.com'],
                 'password' => 'Mudar@123',
                 'level' => 'Plus (1)',
-                'count' => 4,
+                'count' => 1,
             ],
             'premium_users' => [
-                'emails' => ['ricardo.premium@closer.com', 'patricia.premium@closer.com', 'bruno.premium@closer.com', 'tatiane.premium@closer.com'],
+                'emails' => ['premium@closer.com'],
                 'password' => 'Mudar@123',
                 'level' => 'Premium (2)',
                 'count' => 4,

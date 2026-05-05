@@ -44,8 +44,8 @@ class JwtAuthController extends Controller
         $hashEmail = $this->gerarHashEmail($emailNormalizado);
 
         // 🔒 Verifica se email já foi banido
-        $emailBanido = DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
+        $emailBanido = DB::table('blocked_emails')
+            ->where('email_hash', $hashEmail)
             ->exists();
 
         if ($emailBanido) {
@@ -93,8 +93,8 @@ class JwtAuthController extends Controller
             $emailNormalizado = strtolower(trim($request->email));
             $hashEmail = $this->gerarHashEmail($emailNormalizado);
             
-            $emailBanido = DB::table('emails_bloqueados')
-                ->where('hash_email', $hashEmail)
+            $emailBanido = DB::table('blocked_emails')
+                ->where('email_hash', $hashEmail)
                 ->exists();
 
             if ($emailBanido) {

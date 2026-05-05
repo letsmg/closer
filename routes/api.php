@@ -7,16 +7,16 @@ use App\Http\Controllers\Api\{
     OAuth2Controller,
     TwoFactorController,
     FeedController,
-    LocalizacaoController,
-    PeferenciaController,
-    PagamentoController,
+    LocationController,
+    PreferenceController,
+    PaymentController,
     ShortsController,
     ChatController,
     FotoController,
     PerfilController,
-    InteracaoController,
+    InteractionController,
     SegundaChanceController,
-    UsuarioController,
+    UserController,
     LikeController,
     BloqueioController
 };
@@ -38,7 +38,7 @@ use App\Http\Controllers\Api\{
 */
 
 // Mantém compatibilidade temporária com rotas antigas (serão removidas)
-Route::post('/cadastrar', [UsuarioController::class, 'cadastrar'])->name('cadastrar.legacy');
+Route::post('/cadastrar', [UserController::class, 'cadastrar'])->name('cadastrar.legacy');
 Route::post('/login', [JwtAuthController::class, 'login'])->name('login');
 
 /*
@@ -72,7 +72,7 @@ Route::get('/oauth/scopes', function () {
 // Rota para buscar cidades com limitação de 120 requisições por minuto para evitar abuso
 // o geonames tem um limite de 1000 requisições por hora, então 120 por minuto é um valor seguro para não atingir esse limite
 Route::middleware('throttle:120,1')
-    ->get('/buscar-cidades', [LocalizacaoController::class, 'buscarCidades']);
+    ->get('/buscar-cidades', [LocationController::class, 'buscarCidades']);
 
 /*
 |--------------------------------------------------------------------------
@@ -100,8 +100,8 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     Route::get('/quem-me-deu-like', [LikeController::class, 'index'])->middleware('plus');
 
 
-    Route::put('/usuario/atualizar', [UsuarioController::class, 'atualizar']);
-    Route::delete('/usuario/excluir', [UsuarioController::class, 'excluir']);
+    Route::put('/usuario/atualizar', [UserController::class, 'atualizar']);
+    Route::delete('/usuario/excluir', [UserController::class, 'excluir']);
     /*
     |--------------------------------------------------------------------------
     | Usuário / Perfil
@@ -128,9 +128,9 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::post('/like/{perfil}', [InteracaoController::class, 'like']);
-    Route::post('/dislike/{perfil}', [InteracaoController::class, 'dislike']);
-    Route::post('/segunda-chance/{perfil}', [InteracaoController::class, 'segundaChance']);
+    Route::post('/like/{perfil}', [InteractionController::class, 'like']);
+    Route::post('/dislike/{perfil}', [InteractionController::class, 'dislike']);
+    Route::post('/segunda-chance/{perfil}', [InteractionController::class, 'segundaChance']);
 
     /*
     |--------------------------------------------------------------------------
@@ -147,8 +147,8 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/preferencias', [PeferenciaController::class, 'index']);
-    Route::post('/perfil/preferencias', [PeferenciaController::class, 'sincronizar']);
+    Route::get('/preferencias', [PreferenceController::class, 'index']);
+    Route::post('/perfil/preferencias', [PreferenceController::class, 'sincronizar']);
 
     /*
     |--------------------------------------------------------------------------
@@ -185,7 +185,7 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::post('/pagamento/verificar', [PagamentoController::class, 'verificarCompra']);
+    Route::post('/pagamento/verificar', [PaymentController::class, 'verificarCompra']);
 
     /*
     |--------------------------------------------------------------------------

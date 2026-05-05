@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class PagamentoController extends Controller
+class PaymentController extends Controller
 {
     public function verificarCompra(Request $request)
     {

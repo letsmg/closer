@@ -45,7 +45,14 @@ class UserSeederUpdated extends Seeder
                 'name' => 'Support Agent',
                 'email' => 'support@closer.com',
                 'password' => Hash::make('Mudar@123'),
-                'nivel_acesso' => 2, // Operational
+                'nivel_acesso' => 5, // Support
+                'ativo' => true,
+            ],
+            [
+                'name' => 'Test User',
+                'email' => 'teste@closer.com',
+                'password' => Hash::make('Mudar@123'),
+                'nivel_acesso' => 0, // Free user for testing
                 'ativo' => true,
             ],
         ];

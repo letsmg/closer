@@ -59,7 +59,7 @@ Route::middleware(['web'])->group(function () {
     
     Route::post('/login', [WebAuthController::class, 'login'])
         ->name('login.post')
-        ->middleware('guest');
+        ->middleware(['guest', 'throttle:5,1']); // 5 tentativas por minuto
     
     Route::get('/register', [WebAuthController::class, 'showRegisterForm'])
         ->name('register')
@@ -67,7 +67,7 @@ Route::middleware(['web'])->group(function () {
     
     Route::post('/register', [WebAuthController::class, 'register'])
         ->name('register.post')
-        ->middleware('guest');
+        ->middleware(['guest', 'throttle:3,1']); // 3 registros por minuto
     
     // Rotas protegidas (requerem sessão)
     Route::post('/logout', [WebAuthController::class, 'logout'])

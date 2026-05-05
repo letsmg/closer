@@ -32,8 +32,8 @@ class AuthController extends Controller
         | 🔒 Verifica se email já foi banido
         |--------------------------------------------------------------------------
         */
-        $emailBanido = DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
+        $emailBanido = DB::table('blocked_emails')
+            ->where('email_hash', $hashEmail)
             ->exists();
 
         if ($emailBanido) {
@@ -197,8 +197,8 @@ class AuthController extends Controller
         | 5️⃣ Verifica se já foi banido
         |--------------------------------------------------------------------------
         */
-        $jaBanido = DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
+        $jaBanido = DB::table('blocked_emails')
+            ->where('email_hash', $hashEmail)
             ->exists();
 
         if ($jaBanido) {
@@ -212,11 +212,11 @@ class AuthController extends Controller
         | 6️⃣ Registra o banimento
         |--------------------------------------------------------------------------
         */
-        DB::table('emails_bloqueados')->insert([
+        DB::table('blocked_emails')->insert([
             'user_id'    => $user->id,
-            'banido_por' => $admin->id,
-            'hash_email' => $hashEmail,
-            'motivo'     => $request->motivo,
+            'banned_by' => $admin->id,
+            'email_hash' => $hashEmail,
+            'reason'     => $request->motivo,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

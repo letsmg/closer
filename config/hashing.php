@@ -66,12 +66,25 @@ return [
     | recommended for password hashing in modern PHP applications. It
     | combines the benefits of Argon2i and Argon2d for maximum security.
     |
+    | Security recommendations (OWASP 2023):
+    | - memory: 128MB+ (131072 KB) for resistance against GPU attacks
+    | - threads: 4+ for modern multi-core CPUs
+    | - time: 6+ iterations for computational cost
+    | - verify: true to prevent timing attacks
+    |
+    | These settings provide strong protection against:
+    | - Brute force attacks
+    | - Dictionary attacks
+    | - Rainbow table attacks
+    | - GPU/ASIC cracking
+    | - Side-channel attacks
+    |
     */
 
     'argon2id' => [
-        'memory' => 65536,
-        'threads' => 3,
-        'time' => 4,
+        'memory' => 131072,  // 128MB (aumentado de 64MB para melhor proteção contra ataques)
+        'threads' => 4,      // 4 threads (aumentado para melhor performance em CPUs modernas)
+        'time' => 6,         // 6 iterações (aumentado para maior resistência a ataques)
         'verify' => true,
     ],
 

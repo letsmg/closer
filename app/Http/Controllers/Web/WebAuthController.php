@@ -48,6 +48,9 @@ class WebAuthController extends Controller
     {
         \Log::info('Tentativa de login Web:', ['email' => $request->email, 'ip' => $request->ip()]);
 
+        // Limpa mensagens de erro persistentes ao tentar login novamente
+        session()->forget('login_error');
+
         $validator = Validator::make($request->all(), [
             'email'    => 'required|email',
             'password' => 'required'
@@ -63,8 +66,8 @@ class WebAuthController extends Controller
         $emailNormalizado = strtolower(trim($request->email));
         $hashEmail = $this->gerarHashEmail($emailNormalizado);
         
-        $emailBanido = DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
+        $emailBanido = DB::table('blocked_emails')
+            ->where('email_hash', $hashEmail)
             ->exists();
 
         if ($emailBanido) {
@@ -89,6 +92,8 @@ class WebAuthController extends Controller
         // Verifica verificação de email
         if (!$user->hasVerifiedEmail()) {
             Auth::logout();
+            // Armazena a mensagem de erro de forma persistente
+            session(['login_error' => 'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.']);
             return redirect()->back()
                 ->with('warning', 'Você precisa confirmar seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
         }
@@ -135,8 +140,8 @@ class WebAuthController extends Controller
         $hashEmail = $this->gerarHashEmail($emailNormalizado);
 
         // Verifica se email foi banido
-        $emailBanido = DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
+        $emailBanido = DB::table('blocked_emails')
+            ->where('email_hash', $hashEmail)
             ->exists();
 
         if ($emailBanido) {

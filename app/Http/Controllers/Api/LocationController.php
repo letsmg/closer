@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-class LocalizacaoController extends Controller
+class LocationController extends Controller
 {
     // ==========================================================
     // 🔎 BUSCAR CIDADES (com cache + proteção inteligente)

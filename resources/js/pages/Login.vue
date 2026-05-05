@@ -74,8 +74,8 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const form = reactive({
-  email: 'user@1.com', // Default test user
-  password: 'Change@123', // Default test password (8+ chars, uppercase, special)
+  email: 'admin@closer.com', // Default test admin user
+  password: 'Mudar@123', // Default test password (matches seeders)
   twoFactorCode: '',
 });
 

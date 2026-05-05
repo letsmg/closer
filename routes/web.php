@@ -29,6 +29,6 @@ Route::get('/security', function () {
 
 // Catch-all route for Vue SPA
 // All routes not matching API or Auth routes go here
-Route::middleware(['terms.accepted'])->get('/{any?}', function () {
+Route::get('/{any?}', function () {
     return view('app');
 })->where('any', '.*')->name('spa');

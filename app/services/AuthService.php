@@ -175,8 +175,8 @@ class AuthService
         $emailNormalizado = strtolower(trim($email));
         $hashEmail = hash('sha256', $emailNormalizado);
         
-        return DB::table('emails_bloqueados')
-            ->where('hash_email', $hashEmail)
+        return DB::table('blocked_emails')
+            ->where('email_hash', $hashEmail)
             ->exists();
     }
 

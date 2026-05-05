@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Preferencia;
 use Illuminate\Http\Request;
 
-class PeferenciaController extends Controller
+class PreferenceController extends Controller
 {
     // Lista todos os preferencias disponíveis no sistema
     public function index()

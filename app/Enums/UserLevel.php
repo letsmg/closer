@@ -15,6 +15,7 @@ enum UserLevel: int
     case PREMIUM = 2;       // Usuário Premium (pago avançado)
     case ADMIN = 3;         // Administrador do sistema
     case OPERATIONAL = 4;   // Operacional (abaixo do admin)
+    case SUPPORT = 5;       // Suporte ao cliente
 
     /**
      * Retorna o nome amigável do nível
@@ -27,6 +28,7 @@ enum UserLevel: int
             self::PREMIUM => 'Premium',
             self::ADMIN => 'Administrador',
             self::OPERATIONAL => 'Operacional',
+            self::SUPPORT => 'Suporte',
         };
     }
 
@@ -41,6 +43,7 @@ enum UserLevel: int
             self::PREMIUM => 'Usuário Premium com todos os recursos',
             self::ADMIN => 'Administrador com acesso total ao sistema',
             self::OPERATIONAL => 'Operacional com acesso limitado à administração',
+            self::SUPPORT => 'Suporte ao cliente com acesso a ferramentas de atendimento',
         };
     }
 
@@ -55,6 +58,7 @@ enum UserLevel: int
             self::PREMIUM => 'gold',
             self::ADMIN => 'red',
             self::OPERATIONAL => 'orange',
+            self::SUPPORT => 'green',
         };
     }
 
@@ -125,6 +129,7 @@ enum UserLevel: int
             self::PREMIUM => PHP_INT_MAX, // Ilimitado
             self::ADMIN => PHP_INT_MAX,
             self::OPERATIONAL => PHP_INT_MAX,
+            self::SUPPORT => PHP_INT_MAX,
         };
     }
 
@@ -139,6 +144,7 @@ enum UserLevel: int
             self::PREMIUM => PHP_INT_MAX,
             self::ADMIN => PHP_INT_MAX,
             self::OPERATIONAL => PHP_INT_MAX,
+            self::SUPPORT => PHP_INT_MAX,
         };
     }
 
@@ -185,6 +191,7 @@ enum UserLevel: int
             self::PREMIUM,
             self::ADMIN,
             self::OPERATIONAL,
+            self::SUPPORT,
         ];
     }
 
@@ -223,6 +230,8 @@ enum UserLevel: int
             'ADMINISTRADOR' => self::ADMIN,
             'OPERATIONAL' => self::OPERATIONAL,
             'OPERACIONAL' => self::OPERATIONAL,
+            'SUPPORT' => self::SUPPORT,
+            'SUPORTE' => self::SUPPORT,
             default => null,
         };
     }

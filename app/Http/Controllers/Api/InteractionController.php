@@ -8,7 +8,7 @@ use App\Models\Perfil;
 use App\Services\MatchService;
 use Illuminate\Http\Request;
 
-class InteracaoController extends Controller
+class InteractionController extends Controller
 {
     protected $matchService;
 

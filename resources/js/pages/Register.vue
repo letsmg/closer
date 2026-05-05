@@ -85,7 +85,7 @@ const authStore = useAuthStore();
 
 const form = reactive({
   name: 'Teste User', // Nome padrão para testes
-  email: 'test@closer.com', // Email padrão para testes
+  email: 'teste@closer.com', // Email padrão para testes (não existe nos seeders)
   password: 'Mudar@123', // Senha padrão para testes (8+ chars, maiúscula, especial)
   password_confirmation: 'Mudar@123', // Confirmação padrão para testes
 });

@@ -13,6 +13,12 @@
             <p class="text-gray-600 mt-2">Entre com sua conta para continuar</p>
         </div>
 
+        @if(session('login_error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ session('login_error') }}
+            </div>
+        @endif
+
         @if(session('error'))
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {{ session('error') }}

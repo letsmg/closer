@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('hobbies', function (Blueprint $table) {
             $table->id();
-            $table->string('nome')->unique();
-            $table->string('categoria')->nullable();
+            $table->string('name')->unique();
+            $table->string('category')->nullable();
             $table->timestamps();
         });
     }
