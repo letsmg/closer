@@ -29,14 +29,7 @@ return new class extends Migration
             $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->boolean('two_factor_enabled')->default(false);
             
-            // Assinatura e Reputação
-            $table->string('assinatura_id')->nullable(); 
-            $table->integer('reputacao')->default(0)->index();
-            $table->timestamp('premium_expira_em')->nullable();
-            
             // Interação e Tracking
-            $table->timestamp('ultima_interacao_at')->nullable()->index();
-            $table->timestamp('ultima_conversa_at')->nullable()->index();
             $table->timestamp('ultimo_login_em')->nullable();
             $table->string('ultimo_ip', 45)->nullable();
             $table->timestamp('last_seen')->nullable();

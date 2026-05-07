@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use App\Traits\HasUlid;
+
 class Profile extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUlid;
     
     protected $table = 'profiles';
     
@@ -15,8 +17,20 @@ class Profile extends Model
         'user_id', 'nickname', 'birth_date', 'gender', 'gender_identity',
         'sexual_orientation', 'purpose', 'profession', 'biography', 'smoker',
         'drinker', 'marital_status', 'country_id', 'state_id', 'city_id',
-        'visibility', 'latitude', 'longitude'
+        'visibility', 'latitude', 'longitude', 'uuid',
+        'assinatura_id', 'reputacao', 'premium_expira_em', 
+        'ultima_interacao_at', 'ultima_conversa_at'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+            'premium_expira_em' => 'datetime',
+            'ultima_interacao_at' => 'datetime',
+            'ultima_conversa_at' => 'datetime',
+        ];
+    }
 
     // ---------------------------------------------------------
     // Direct Relations (1:1 and 1:N)

@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+use App\Traits\HasUlid;
+
 class ProfilePhoto extends Model
 {
+    use HasUlid;
+
     protected $table = 'profile_photos';
-    protected $fillable = ['user_id', 'path', 'is_primary', 'order'];
+    protected $fillable = ['user_id', 'path', 'is_primary', 'order', 'uuid'];
 
     // Virtual attribute to facilitate Kotlin life
     protected $appends = ['full_url'];

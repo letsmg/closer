@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2KQnzcB7pVzfAvLXmOMOVMT4okqL36Mf4E2I7KP7jaHEbpFHX6GaEecxWIL5Due
+\restrict kQQgOtVe9KNCCrajbV5FPgvICJPr17qzeajAaKBTgfS0ToKEFMDlacWvQTc436s
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -651,6 +651,7 @@ ALTER SEQUENCE public.profile_languages_id_seq OWNED BY public.profile_languages
 
 CREATE TABLE public.profile_photos (
     id bigint NOT NULL,
+    uuid character(26),
     user_id bigint NOT NULL,
     path character varying(255) NOT NULL,
     is_primary boolean DEFAULT false NOT NULL,
@@ -733,6 +734,7 @@ ALTER SEQUENCE public.profile_preferences_id_seq OWNED BY public.profile_prefere
 
 CREATE TABLE public.profiles (
     id bigint NOT NULL,
+    uuid character(26),
     user_id bigint NOT NULL,
     nickname character varying(255),
     birth_date date NOT NULL,
@@ -751,6 +753,11 @@ CREATE TABLE public.profiles (
     latitude numeric(10,8),
     longitude numeric(11,8),
     visibility character varying(255) DEFAULT 'public'::character varying NOT NULL,
+    assinatura_id character varying(255),
+    reputacao integer DEFAULT 0 NOT NULL,
+    premium_expira_em timestamp(0) without time zone,
+    ultima_interacao_at timestamp(0) without time zone,
+    ultima_conversa_at timestamp(0) without time zone,
     created_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
     CONSTRAINT profiles_gender_check CHECK (((gender)::text = ANY ((ARRAY['male'::character varying, 'female'::character varying, 'non_binary'::character varying, 'other'::character varying])::text[]))),
@@ -1060,11 +1067,6 @@ CREATE TABLE public.users (
     two_factor_recovery_codes text,
     two_factor_confirmed_at timestamp(0) without time zone,
     two_factor_enabled boolean DEFAULT false NOT NULL,
-    assinatura_id character varying(255),
-    reputacao integer DEFAULT 0 NOT NULL,
-    premium_expira_em timestamp(0) without time zone,
-    ultima_interacao_at timestamp(0) without time zone,
-    ultima_conversa_at timestamp(0) without time zone,
     ultimo_login_em timestamp(0) without time zone,
     ultimo_ip character varying(45),
     last_seen timestamp(0) without time zone,
@@ -1570,6 +1572,14 @@ ALTER TABLE ONLY public.profile_photos
 
 
 --
+-- Name: profile_photos profile_photos_uuid_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profile_photos
+    ADD CONSTRAINT profile_photos_uuid_unique UNIQUE (uuid);
+
+
+--
 -- Name: profile_preferences profile_preferences_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1591,6 +1601,14 @@ ALTER TABLE ONLY public.profile_preferences
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: profiles profiles_uuid_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profiles
+    ADD CONSTRAINT profiles_uuid_unique UNIQUE (uuid);
 
 
 --
@@ -1767,6 +1785,27 @@ CREATE INDEX personal_access_tokens_tokenable_type_tokenable_id_index ON public.
 
 
 --
+-- Name: profiles_reputacao_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX profiles_reputacao_index ON public.profiles USING btree (reputacao);
+
+
+--
+-- Name: profiles_ultima_conversa_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX profiles_ultima_conversa_at_index ON public.profiles USING btree (ultima_conversa_at);
+
+
+--
+-- Name: profiles_ultima_interacao_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX profiles_ultima_interacao_at_index ON public.profiles USING btree (ultima_interacao_at);
+
+
+--
 -- Name: refresh_tokens_token_family_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1806,34 +1845,6 @@ CREATE INDEX sessions_last_activity_index ON public.sessions USING btree (last_a
 --
 
 CREATE INDEX sessions_user_id_index ON public.sessions USING btree (user_id);
-
-
---
--- Name: user_matches_user_one_id_user_two_id_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX user_matches_user_one_id_user_two_id_index ON public.user_matches USING btree (user_one_id, user_two_id);
-
-
---
--- Name: users_reputacao_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX users_reputacao_index ON public.users USING btree (reputacao);
-
-
---
--- Name: users_ultima_conversa_at_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX users_ultima_conversa_at_index ON public.users USING btree (ultima_conversa_at);
-
-
---
--- Name: users_ultima_interacao_at_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX users_ultima_interacao_at_index ON public.users USING btree (ultima_interacao_at);
 
 
 --
@@ -2136,13 +2147,13 @@ ALTER TABLE ONLY public.user_matches
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2KQnzcB7pVzfAvLXmOMOVMT4okqL36Mf4E2I7KP7jaHEbpFHX6GaEecxWIL5Due
+\unrestrict kQQgOtVe9KNCCrajbV5FPgvICJPr17qzeajAaKBTgfS0ToKEFMDlacWvQTc436s
 
 --
 -- PostgreSQL database dump
 --
 
-\restrict t9sfVBTe6vQd2ygV95u3MsbPS2I6QJj4Wc99j3lopdbSo75XViDAuxwCSL2XO4P
+\restrict lb8DphlTeu7Xyc0K0g0nm9Qyeeew7OKbxlWavqDhOxsOf0nU2oDx7vR3177uZQa
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -2205,5 +2216,5 @@ SELECT pg_catalog.setval('public.migrations_id_seq', 27, true);
 -- PostgreSQL database dump complete
 --
 
-\unrestrict t9sfVBTe6vQd2ygV95u3MsbPS2I6QJj4Wc99j3lopdbSo75XViDAuxwCSL2XO4P
+\unrestrict lb8DphlTeu7Xyc0K0g0nm9Qyeeew7OKbxlWavqDhOxsOf0nU2oDx7vR3177uZQa
 

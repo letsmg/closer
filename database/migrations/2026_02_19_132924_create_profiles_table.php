@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
+            $table->ulid('uuid')->after('id')->unique()->nullable();
 
             $table->foreignId('user_id')
                   ->constrained()
@@ -61,6 +62,13 @@ return new class extends Migration
 
             // Visibility
             $table->enum('visibility', ['public', 'hidden', 'matches_only'])->default('public');
+
+            // Social & Subscription (Moved from users)
+            $table->string('assinatura_id')->nullable(); 
+            $table->integer('reputacao')->default(0)->index();
+            $table->timestamp('premium_expira_em')->nullable();
+            $table->timestamp('ultima_interacao_at')->nullable()->index();
+            $table->timestamp('ultima_conversa_at')->nullable()->index();
 
             $table->timestamps();
         });

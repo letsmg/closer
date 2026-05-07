@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('profile_photos', function (Blueprint $table) {
             $table->id();
+            $table->ulid('uuid')->after('id')->unique()->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('path'); // Relative path: 'photos/abc123.jpg'
             $table->boolean('is_primary')->default(false);

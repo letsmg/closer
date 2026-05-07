@@ -24,17 +24,19 @@ class AtualizarReputacaoInativos implements ShouldQueue
      */
     private function penalizarInatividade(): void
     {
-        User::where(function ($query) {
+        User::whereHas('perfil', function ($query) {
                 $query->where('ultima_interacao_at', '<', now()->subDay())
                       ->orWhereNull('ultima_interacao_at');
             })
+            ->with('perfil')
             ->chunkById(1000, function ($users) {
 
                 foreach ($users as $user) {
+                    $perfil = $user->perfil;
 
-                    if ($user->reputacao > 0) {
-                        $user->update([
-                            'reputacao' => max(0, $user->reputacao - 1)
+                    if ($perfil && $perfil->reputacao > 0) {
+                        $perfil->update([
+                            'reputacao' => max(0, $perfil->reputacao - 1)
                         ]);
                     }
                 }
@@ -61,11 +63,11 @@ class AtualizarReputacaoInativos implements ShouldQueue
 
                         if (!$enviouMensagem) {
 
-                            $user = User::find($userId);
+                            $user = User::with('perfil')->find($userId);
 
-                            if ($user && $user->reputacao > 0) {
-                                $user->update([
-                                    'reputacao' => max(0, $user->reputacao - 2)
+                            if ($user && $user->perfil && $user->perfil->reputacao > 0) {
+                                $user->perfil->update([
+                                    'reputacao' => max(0, $user->perfil->reputacao - 2)
                                 ]);
                             }
                         }

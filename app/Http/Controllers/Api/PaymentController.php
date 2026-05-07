@@ -22,8 +22,9 @@ class PaymentController extends Controller
         $assinaturaValida = true; 
 
         if ($assinaturaValida) {
-            $usuario->update([
-                'nivel_acesso'       => 1, // Torna o usuário Plus
+            $usuario->update(['nivel_acesso' => 1]); // Torna o usuário Plus
+            
+            $usuario->perfil->update([
                 'assinatura_id'      => $request->produto_id,
                 'premium_expira_em'  => now()->addMonths(1), // Adiciona 30 dias
             ]);

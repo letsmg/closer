@@ -30,11 +30,8 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'uuid',              // Public ULID (obscures incremental ID)
         'ativo',
         'nivel_acesso',      // 0 = Free | 1 = Plus | 2 = Premium
-        'reputacao',
-        'ultima_interacao_at',
-        'ultima_conversa_at',
-        'assinatura_id',
-        'premium_expira_em',
+        'ultimo_login_em',
+        'ultimo_ip',
     ];
 
     /**
@@ -66,7 +63,6 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     {
         return [
             'email_verified_at' => 'datetime', // Converts to Carbon object
-            'premium_expira_em' => 'datetime',
             'ativo' => 'boolean',
             'password' => 'hashed', // Automatic hash on save
             'nivel_acesso' => 'integer',
