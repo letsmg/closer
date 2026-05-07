@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('countries', function (Blueprint $table) {
-            $table->id(); // BigInt Unsigned
+            $table->id();
+            $table->string('name')->unique();
             $table->string('code')->unique();
-            $table->string('abbreviation', 5);
+            $table->string('abbreviation', 5)->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

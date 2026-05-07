@@ -213,16 +213,17 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     Route::post('/2fa/disable', [TwoFactorController::class, 'disable']);
     Route::post('/2fa/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN ROUTES
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['level:staff'])->group(function () {
-        Route::get('/users', [UserController::class, 'index']);
-        Route::get('/users/{user}', [UserController::class, 'show']);
-        Route::put('/users/{user}', [UserController::class, 'update']);
-        Route::delete('/users/{user}', [UserController::class, 'destroy']);
-    });
+});
 
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:api', 'level:staff'])->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::put('/users/{user}', [UserController::class, 'update']);
+    Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword']);
+    Route::delete('/users/{user}', [UserController::class, 'destroy']);
 });

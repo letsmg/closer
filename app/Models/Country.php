@@ -10,7 +10,7 @@ class Country extends Model
     use HasFactory;
     
     protected $table = 'countries';
-    protected $fillable = ['code', 'abbreviation'];
+    protected $fillable = ['name', 'code', 'abbreviation', 'active'];
 
     public function states() { return $this->hasMany(State::class); }
 }

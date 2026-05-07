@@ -31,8 +31,8 @@ return new class extends Migration
             $table->text('biography')->nullable();
 
             // Habits
-            $table->boolean('smoker');
-            $table->boolean('drinker');
+            $table->string('smoker')->nullable();
+            $table->string('drinker')->nullable();
 
             // Marital status
             $table->enum('marital_status', [

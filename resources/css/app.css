@@ -1,11 +1,29 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+@import "tailwindcss";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --color-primary-50: #fdf2f8;
+  --color-primary-100: #fce7f3;
+  --color-primary-200: #fbcfe8;
+  --color-primary-300: #f9a8d4;
+  --color-primary-400: #f472b6;
+  --color-primary-500: #ec4899;
+  --color-primary-600: #db2777;
+  --color-primary-700: #be185d;
+  --color-primary-800: #9d174d;
+  --color-primary-900: #831843;
+  --color-primary-950: #500724;
+
+  --color-wine-50: #fdf2f8;
+  --color-wine-100: #fce7f3;
+  --color-wine-200: #fbcfe8;
+  --color-wine-300: #f9a8d4;
+  --color-wine-400: #f472b6;
+  --color-wine-500: #ec4899;
+  --color-wine-600: #db2777;
+  --color-wine-700: #be185d;
+  --color-wine-800: #9d174d;
+  --color-wine-900: #831843;
+  --color-wine-950: #500724;
+
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
 }

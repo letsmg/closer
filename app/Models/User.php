@@ -69,6 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
             'premium_expira_em' => 'datetime',
             'ativo' => 'boolean',
             'password' => 'hashed', // Automatic hash on save
+            'nivel_acesso' => 'integer',
         ];
     }
 
@@ -106,6 +107,22 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     {
         return $this->hasMany(ProfilePhoto::class)
                     ->orderBy('order', 'asc');
+    }
+
+    /**
+     * Denúncias recebidas por este usuário
+     */
+    public function reportsReceived()
+    {
+        return $this->hasMany(Report::class, 'reported_id');
+    }
+
+    /**
+     * Denúncias feitas por este usuário
+     */
+    public function reportsMade()
+    {
+        return $this->hasMany(Report::class, 'reporter_id');
     }
 
     public function isOnline()
@@ -255,7 +272,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
      */
     public function isAdminLevel(): bool
     {
-        return $this->getLevelAttribute()->isAdmin();
+        return $this->nivel_acesso >= 3;
     }
 
     /**

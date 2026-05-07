@@ -1,7 +1,14 @@
+
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const routes = [
+  {
+    path: '/admin/usuarios/editar/:id',
+    name: 'admin-user-edit',
+    component: () => import('../pages/admin/UserEdit.vue'),
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
   {
     path: '/',
     name: 'home',

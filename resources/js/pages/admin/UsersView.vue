@@ -83,7 +83,7 @@
                   <td class="px-6 py-4 whitespace-nowrap"><div class="h-10 w-10 bg-gray-200 rounded-full"></div></td>
                   <td colspan="5" class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-3/4"></div></td>
                 </tr>
-                <tr v-else-if="users.length === 0">
+                <tr v-else-if="!users || users.length === 0">
                   <td colspan="6" class="px-6 py-10 text-center text-gray-500">
                     Nenhum usuário encontrado.
                   </td>
@@ -140,10 +140,24 @@
                     {{ formatDate(user.created_at) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button @click="editUser(user)" class="text-primary-600 hover:text-primary-900 mr-3">Editar</button>
-                    <button @click="toggleUserStatus(user)" :class="user.ativo ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'">
-                      {{ user.ativo ? 'Banir' : 'Reativar' }}
-                    </button>
+                    <!-- Ações visíveis apenas para Admin Nível 3+ -->
+                    <template v-if="canManage">
+                      <button @click="editUser(user)" class="text-primary-600 hover:text-primary-900 mr-3">Editar</button>
+                      
+                      <button @click="resetPassword(user)" class="text-amber-600 hover:text-amber-900 mr-3">Resetar Senha</button>
+                      
+                      <template v-if="user.id !== authStore.user?.id">
+                        <button @click="toggleUserStatus(user)" :class="user.ativo ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'">
+                          {{ user.ativo ? 'Desativar' : 'Ativar' }}
+                        </button>
+                      </template>
+                      <template v-else>
+                        <span class="text-gray-400 text-xs">(Você)</span>
+                      </template>
+                    </template>
+                    <template v-else>
+                      <span class="text-gray-400 text-xs">Somente Visualização</span>
+                    </template>
                   </td>
                 </tr>
               </tbody>
@@ -183,9 +197,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import AdminNavigationMenu from '../../components/AdminNavigationMenu.vue';
+import { useAuthStore } from '../../stores/auth';
 import api from '../../api';
+
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.isStaffLevel);
 
 // Custom debounce implementation to avoid dependency issues
 const debounce = (fn, delay) => {
@@ -211,21 +229,29 @@ const pagination = ref({
 const fetchUsers = async (page = 1) => {
   loading.value = true;
   try {
-    const response = await api.get('/api/users', {
+    const response = await api.get('users', {
       params: {
         page,
         filter: filter.value,
         search: search.value
       }
     });
-    users.value = response.data.data;
-    pagination.value = {
-      current_page: response.data.current_page,
-      last_page: response.data.last_page,
-      total: response.data.total,
-      from: response.data.from,
-      to: response.data.to
-    };
+    
+    // Suporte para resposta paginada ou array simples
+    if (response.data && response.data.data) {
+      users.value = response.data.data;
+      pagination.value = {
+        current_page: response.data.current_page || 1,
+        last_page: response.data.last_page || 1,
+        total: response.data.total || 0,
+        from: response.data.from || 0,
+        to: response.data.to || 0
+      };
+    } else if (Array.isArray(response.data)) {
+      users.value = response.data;
+    } else {
+      users.value = [];
+    }
   } catch (error) {
     console.error('Erro ao buscar usuários:', error);
   } finally {
@@ -273,16 +299,27 @@ const formatDate = (dateString) => {
 };
 
 const editUser = (user) => {
-  // TODO: Implementar modal de edição
-  alert('Funcionalidade de edição em desenvolvimento para: ' + user.name);
+  // Redireciona para página de edição usando UUID
+  window.location.href = `/admin/usuarios/editar/${user.uuid}`;
+};
+
+const resetPassword = async (user) => {
+  if (!confirm(`Deseja realmente resetar a senha do usuário ${user.name}? Uma nova senha temporária será enviada.`)) return;
+  
+  try {
+    await api.post(`/users/${user.uuid}/reset-password`);
+    alert('Senha resetada com sucesso! O usuário receberá as instruções por e-mail.');
+  } catch (error) {
+    alert('Erro ao resetar senha. Verifique se o endpoint existe.');
+  }
 };
 
 const toggleUserStatus = async (user) => {
-  const action = user.ativo ? 'banir' : 'reativar';
+  const action = user.ativo ? 'desativar' : 'ativar';
   if (!confirm(`Tem certeza que deseja ${action} o usuário ${user.name}?`)) return;
 
   try {
-    await api.put(`/api/users/${user.id}`, {
+    await api.put(`/users/${user.uuid}`, {
       ativo: !user.ativo
     });
     user.ativo = !user.ativo;

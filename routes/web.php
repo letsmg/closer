@@ -24,4 +24,7 @@ Route::get('/security', [SpaController::class, 'security'])->name('security');
 
 // Catch-all route for Vue SPA
 // All routes not matching API or Auth routes go here
-Route::get('/{any?}', [SpaController::class, 'index'])->where('any', '.*')->name('login');
+// We use a negative lookahead to prevent this from catching API routes
+Route::get('/{any?}', [SpaController::class, 'index'])
+    ->where('any', '^(?!api/).*')
+    ->name('login');

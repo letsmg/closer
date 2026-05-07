@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -92,35 +93,40 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('manage-users');
-        
-        $users = User::with('perfil')
-            ->withCount(['fotos'])
-            ->leftJoin('reports', 'users.id', '=', 'reports.reported_id')
-            ->select('users.*', DB::raw('COUNT(reports.id) as reports_count'))
-            ->groupBy('users.id')
-            ->when($request->search, function ($query, $search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('users.name', 'like', "%{$search}%")
-                      ->orWhere('users.email', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->filter === 'staff', function ($query) {
-                $query->where('nivel_acesso', '>=', 3);
-            })
-            ->when($request->filter === 'regular', function ($query) {
-                $query->where('nivel_acesso', '<', 3);
-            })
-            ->when($request->filter === 'reported', function ($query) {
-                $query->having('reports_count', '>', 0);
-            })
-            ->when($request->level, function ($query, $level) {
-                $query->where('nivel_acesso', $level);
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        try {
+            $this->authorize('viewAny', User::class);
+            
+            $users = User::with('perfil')
+                ->withCount(['fotos', 'reportsReceived as reports_count'])
+                ->when($request->search, function ($query, $search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                          ->orWhere('email', 'like', "%{$search}%");
+                    });
+                })
+                ->when($request->filter === 'staff', function ($query) {
+                    $query->where('nivel_acesso', '>=', 3);
+                })
+                ->when($request->filter === 'regular', function ($query) {
+                    $query->where('nivel_acesso', '<', 3);
+                })
+                ->when($request->filter === 'reported', function ($query) {
+                    $query->has('reportsReceived');
+                })
+                ->when($request->level, function ($query, $level) {
+                    $query->where('nivel_acesso', $level);
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
 
-        return response()->json($users);
+            return response()->json($users);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching users: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
     }
 
     /**
@@ -128,9 +134,9 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $this->authorize('view-users');
+        $this->authorize('view', $user);
         
-        $user->load(['profile', 'profile.photos', 'profile.hobbies']);
+        $user->load(['perfil', 'perfil.photos', 'perfil.hobbies']);
         
         return response()->json($user);
     }
@@ -140,18 +146,46 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $this->authorize('manage-users');
+        $this->authorize('update', $user);
         
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
-            'nivel_acesso' => 'sometimes|integer|min:0|max:3',
-            'ativo' => 'sometimes|boolean'
+            'nivel_acesso' => 'sometimes|integer|min:0|max:5',
+            'ativo' => 'sometimes|boolean',
+            'profile.nickname' => 'sometimes|string|max:255',
+            'profile.gender' => 'sometimes|string|max:20',
+            'profile.biography' => 'sometimes|string|nullable'
         ]);
 
+        // Atualiza dados da conta
         $user->update($request->only(['name', 'email', 'nivel_acesso', 'ativo']));
+
+        // Atualiza dados do perfil se enviados
+        if ($request->has('profile')) {
+            $user->perfil()->update($request->input('profile'));
+        }
         
-        return response()->json($user);
+        return response()->json($user->load('perfil'));
+    }
+
+    /**
+     * Reset user password
+     */
+    public function resetPassword(User $user)
+    {
+        $this->authorize('update', $user);
+        
+        $temporaryPassword = Str::random(10);
+        
+        $user->update([
+            'password' => Hash::make($temporaryPassword)
+        ]);
+        
+        return response()->json([
+            'message' => 'Password reset successfully',
+            'temporary_password' => $temporaryPassword
+        ]);
     }
 
     /**
@@ -159,7 +193,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $this->authorize('manage-users');
+        $this->authorize('delete', $user);
         
         $user->delete();
         

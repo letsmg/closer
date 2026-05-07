@@ -83,7 +83,7 @@ enum UserLevel: int
      */
     public function isAdmin(): bool
     {
-        return $this->value >= self::ADMIN->value;
+        return $this === self::ADMIN;
     }
 
     /**
@@ -99,7 +99,8 @@ enum UserLevel: int
      */
     public function canManageUsers(): bool
     {
-        return $this->value >= self::ADMIN->value;
+        // Apenas o nível ADMIN (3) pode gerenciar usuários
+        return $this === self::ADMIN;
     }
 
     /**
@@ -107,7 +108,8 @@ enum UserLevel: int
      */
     public function canViewAnalytics(): bool
     {
-        return $this->value >= self::OPERATIONAL->value;
+        // Todos os níveis de staff (3, 4, 5) podem ver analytics
+        return $this->value >= self::ADMIN->value;
     }
 
     /**
@@ -115,7 +117,8 @@ enum UserLevel: int
      */
     public function canModerateContent(): bool
     {
-        return $this->value >= self::OPERATIONAL->value;
+        // Todos os níveis de staff (3, 4, 5) podem moderar
+        return $this->value >= self::ADMIN->value;
     }
 
     /**

@@ -11,7 +11,10 @@ class CountrySeeder extends Seeder
     {
         Country::updateOrCreate(
             ['code' => 'BR'],
-            ['abbreviation' => 'BRA']
+            [
+                'name' => 'Brasil',
+                'abbreviation' => 'BRA'
+            ]
         );
 
         $this->command->info('Countries created successfully.');

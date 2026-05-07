@@ -20,6 +20,7 @@ return new class extends Migration
             $table->bigInteger('geoname_id')->unique()->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
+            $table->boolean('active')->default(true);
             
             $table->index('state_id');
             $table->index('country_code');

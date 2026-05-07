@@ -33,12 +33,14 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken.value = authData.refresh_token;
     user.value = authData.user;
     
-    localStorage.setItem('access_token', authData.access_token);
-    localStorage.setItem('refresh_token', authData.refresh_token);
-    localStorage.setItem('user', JSON.stringify(authData.user));
+    if (authData.access_token) localStorage.setItem('access_token', authData.access_token);
+    if (authData.refresh_token) localStorage.setItem('refresh_token', authData.refresh_token);
+    if (authData.user) localStorage.setItem('user', JSON.stringify(authData.user));
     
     // Set default header for axios
-    api.defaults.headers.common['Authorization'] = `Bearer ${authData.access_token}`;
+    if (authData.access_token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${authData.access_token}`;
+    }
   };
 
   const clearAuth = () => {
@@ -67,7 +69,9 @@ export const useAuthStore = defineStore('auth', () => {
       });
       
       if (response.data.success !== false) {
-        setAuth(response.data);
+        // Support both OAuth2 token response and custom success response
+        const authData = response.data.data || response.data;
+        setAuth(authData);
         return { success: true };
       }
     } catch (err) {
@@ -83,7 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null;
     
     try {
-      const response = await api.post('/api/auth/register', userData);
+      const response = await api.post('auth/register', userData);
       
       if (response.data.success) {
         return { success: true };
@@ -99,7 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     try {
       if (token.value) {
-        await api.post('/api/auth/logout');
+        await api.post('auth/logout');
       }
     } catch (err) {
       console.error('Logout error:', err);
@@ -116,13 +120,17 @@ export const useAuthStore = defineStore('auth', () => {
     
     try {
       api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
-      const response = await api.get('/api/auth/me');
+      const response = await api.get('auth/me');
       
-      if (response.data && response.data.success) {
-        user.value = response.data.data.user;
+      // Flexible check for response data
+      const userData = response.data?.data?.user || response.data?.user || response.data;
+      
+      if (userData && (userData.id || userData.uuid || userData.email)) {
+        user.value = userData;
         localStorage.setItem('user', JSON.stringify(user.value));
       } else {
-        throw new Error('Invalid response');
+        console.error('CheckAuth: Data structure mismatch. Response:', response.data);
+        throw new Error('Invalid user data in response');
       }
     } catch (err) {
       console.error('CheckAuth failed:', err);
