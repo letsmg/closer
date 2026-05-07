@@ -13,17 +13,18 @@
 
 ### Backend
 - **Framework**: Laravel 11+ (PHP 8.2+)
-- **Database**: PostgreSQL 15+
-- **Authentication**: Laravel Sanctum + Two-Factor Authentication
+- **Database**: MySQL/MariaDB or PostgreSQL 15+ (Current: MySQL via XAMPP)
+- **Authentication**: JWT (JSON Web Tokens) + OAuth2 Standard
+- **Password Hashing**: Argon2id
 - **API**: RESTful API with comprehensive validation
 - **Queue System**: Redis + Laravel Queues
 - **File Storage**: Local/S3 compatible
-- **Security**: Rate limiting, CORS, CSRF protection
+- **Security**: Rate limiting, CORS, CSRF protection, Device Fingerprinting
 
 ### Frontend
 - **Framework**: Vue.js 3 with Composition API
 - **Build Tool**: Vite
-- **UI Framework**: Tailwind CSS
+- **UI Framework**: Tailwind CSS (Custom Pink/Wine theme)
 - **State Management**: Pinia
 - **Router**: Vue Router 4
 - **HTTP Client**: Axios
@@ -111,13 +112,13 @@
 ```bash
 # Required Software
 PHP 8.2+
-PostgreSQL 15+
+MySQL 8.0+ or PostgreSQL 15+
 Composer 2.0+
 Node.js 18+
 npm 9+
 
 # Required PHP Extensions
-pdo_pgsql
+pdo_mysql (or pdo_pgsql)
 mbstring
 openssl
 tokenizer
@@ -125,6 +126,8 @@ xml
 gd
 fileinfo
 curl
+bcmath
+intl
 ```
 
 ### Quick Start
@@ -282,15 +285,28 @@ SANCTUM_STATEFUL_DOMAINS=localhost:8000
 
 ### Running Tests
 ```bash
-# Run all tests
+# Run all tests (PHPUnit)
 php artisan test
+
+# Run tests using Pest (if preferred)
+./vendor/bin/pest
 
 # Run specific test
 php artisan test --filter UserTest
 
-# Run with coverage
+# Run with coverage (requires Xdebug)
 php artisan test --coverage
 ```
+
+### Local Testing Libraries
+This project uses **Pest** and **PHPUnit** for backend testing. Ensure development dependencies are installed:
+```bash
+composer install --dev
+```
+
+For frontend testing and development, the following tools are used:
+- **Vite**: Build and HMR
+- **Vue DevTools**: Recommended browser extension for debugging Pinia and Vue Router.
 
 ### API Testing with Postman
 1. Import the Postman collection from `docs/closer-api.postman_collection.json`
@@ -389,17 +405,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Backend
 - **Framework**: Laravel 11+ (PHP 8.2+)
-- **Banco de Dados**: PostgreSQL 15+
-- **Autenticação**: Laravel Sanctum + Autenticação de Dois Fatores
+- **Banco de Dados**: MySQL/MariaDB ou PostgreSQL 15+ (Atual: MySQL via XAMPP)
+- **Autenticação**: JWT (JSON Web Tokens) + Padrão OAuth2
+- **Hash de Senhas**: Argon2id
 - **API**: API RESTful com validação completa
 - **Sistema de Filas**: Redis + Laravel Queues
 - **Armazenamento**: Local/Compatível com S3
-- **Segurança**: Rate limiting, CORS, proteção CSRF
+- **Segurança**: Rate limiting, CORS, proteção CSRF, Device Fingerprinting
 
 ### Frontend
 - **Framework**: Vue.js 3 com Composition API
 - **Build Tool**: Vite
-- **UI Framework**: Tailwind CSS
+- **UI Framework**: Tailwind CSS (Tema customizado Rosa/Vinho)
 - **Gerenciamento de Estado**: Pinia
 - **Router**: Vue Router 4
 - **HTTP Client**: Axios
@@ -465,13 +482,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ```bash
 # Softwares Necessários
 PHP 8.2+
-PostgreSQL 15+
+MySQL 8.0+ ou PostgreSQL 15+
 Composer 2.0+
 Node.js 18+
 npm 9+
 
 # Extensões PHP Necessárias
-pdo_pgsql
+pdo_mysql (ou pdo_pgsql)
 mbstring
 openssl
 tokenizer
@@ -479,6 +496,8 @@ xml
 gd
 fileinfo
 curl
+bcmath
+intl
 ```
 
 ### Início Rápido

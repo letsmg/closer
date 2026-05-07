@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SpaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,22 +14,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Terms of Service route
-Route::get('/terms', function () {
-    return view('terms-popup');
-})->name('terms');
+Route::get('/terms', [SpaController::class, 'terms'])->name('terms');
 
 // Privacy Policy route
-Route::get('/privacy', function () {
-    return view('privacy');
-})->name('privacy');
+Route::get('/privacy', [SpaController::class, 'privacy'])->name('privacy');
 
 // Security Policy route
-Route::get('/security', function () {
-    return view('security');
-})->name('security');
+Route::get('/security', [SpaController::class, 'security'])->name('security');
 
 // Catch-all route for Vue SPA
 // All routes not matching API or Auth routes go here
-Route::get('/{any?}', function () {
-    return view('app');
-})->where('any', '.*')->name('spa');
+Route::get('/{any?}', [SpaController::class, 'index'])->where('any', '.*')->name('login');

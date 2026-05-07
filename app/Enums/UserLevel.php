@@ -232,6 +232,7 @@ enum UserLevel: int
             'OPERACIONAL' => self::OPERATIONAL,
             'SUPPORT' => self::SUPPORT,
             'SUPORTE' => self::SUPPORT,
+            'STAFF' => self::ADMIN,
             default => null,
         };
     }

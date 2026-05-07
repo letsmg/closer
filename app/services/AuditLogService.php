@@ -5,7 +5,9 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Stevebauman\Location\Facades\Location;
 
 /**
  * Service para Audit Logging
@@ -33,6 +35,7 @@ class AuditLogService
             'action' => $action,
             'user_id' => $userId,
             'ip_address' => $request->ip(),
+            'geo_location' => self::resolveGeoLocation($request->ip()),
             'user_agent' => $request->userAgent(),
             'method' => $request->method(),
             'url' => $request->fullUrl(),
@@ -155,6 +158,43 @@ class AuditLogService
                 'error' => $e->getMessage(),
                 'log_data' => $logData,
             ]);
+        }
+    }
+
+    /**
+     * Resolve approximate geolocation from IP using free GeoIP provider.
+     */
+    private static function resolveGeoLocation(?string $ip): string
+    {
+        if (!$ip || $ip === '127.0.0.1' || $ip === '::1') {
+            return 'Localhost';
+        }
+
+        $cacheKey = 'audit_geo:' . md5($ip);
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return $cached;
+        }
+
+        try {
+            $position = Location::get($ip);
+
+            if (!$position) {
+                return 'Unknown Location';
+            }
+
+            $parts = array_filter([
+                $position->cityName ?? null,
+                $position->regionName ?? null,
+                $position->countryName ?? null,
+            ]);
+
+            $location = !empty($parts) ? implode(', ', $parts) : 'Unknown Location';
+            Cache::put($cacheKey, $location, now()->addHours(12));
+
+            return $location;
+        } catch (\Throwable $e) {
+            return 'Unknown Location';
         }
     }
 

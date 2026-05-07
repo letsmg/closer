@@ -1,22 +1,22 @@
 <template>
-  <nav class="bg-white shadow-lg border-b border-admin-100">
+  <nav class="bg-white shadow-lg border-b border-primary-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex items-center">
-          <h1 class="text-xl font-bold text-admin-600">Closer Admin</h1>
+          <h1 class="text-xl font-bold text-primary-600">Closer Admin</h1>
         </div>
 
         <!-- Desktop Menu -->
         <div class="hidden md:flex items-center space-x-4">
-          <RouterLink to="/admin/dashboard" class="text-gray-600 hover:text-admin-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-admin-50 transition-colors">Dashboard</RouterLink>
-          <RouterLink to="/admin/users" class="text-gray-600 hover:text-admin-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-admin-50 transition-colors">Usuários</RouterLink>
-          <RouterLink to="/admin/denuncias" class="text-gray-600 hover:text-admin-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-admin-50 transition-colors">Denúncias</RouterLink>
+          <RouterLink to="/admin/dashboard" class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-50 transition-colors">Dashboard</RouterLink>
+          <RouterLink to="/admin/users" class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-50 transition-colors">Usuários</RouterLink>
+          <RouterLink to="/admin/denuncias" class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-50 transition-colors">Denúncias</RouterLink>
           
           <!-- Staff Menu -->
-          <div v-if="userStore.user?.is_admin_level" class="relative">
+          <div v-if="userStore.isStaffLevel" class="relative">
             <button
               @click="toggleStaffMenu"
-              class="text-gray-600 hover:text-admin-600 px-3 py-2 rounded-md text-sm font-medium flex items-center hover:bg-admin-50 transition-colors"
+              class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center hover:bg-primary-50 transition-colors"
             >
               Relatórios
               <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -30,7 +30,7 @@
                 <div class="relative">
                   <button
                     @click="toggleReportsMenu"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-admin-50 flex items-center justify-between"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 flex items-center justify-between"
                   >
                     <span>Relatórios</span>
                     <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -42,7 +42,7 @@
                     <div class="py-1">
                       <RouterLink
                         to="/admin/reports/users"
-                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-admin-50"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50"
                         @click="closeAllMenus"
                       >
                         Relatório de Usuários
@@ -54,7 +54,7 @@
                 <!-- Analytics -->
                 <RouterLink
                   to="/admin/analytics"
-                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-admin-50"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50"
                   @click="closeAllMenus"
                 >
                   Analytics
@@ -63,7 +63,7 @@
                 <!-- Logs -->
                 <RouterLink
                   to="/admin/logs"
-                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-admin-50"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50"
                   @click="closeAllMenus"
                 >
                   Logs do Sistema
@@ -71,13 +71,11 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Botão Sair sempre visível -->
-        <div class="hidden md:flex items-center">
+          <!-- Botão Sair Desktop -->
           <button
             @click="handleLogout"
-            class="bg-admin-500 hover:bg-admin-600 text-white px-4 py-2 rounded-md cursor-pointer transition-all duration-200 hover:shadow-lg text-sm font-medium"
+            class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
           >
             Sair
           </button>
@@ -87,7 +85,7 @@
         <div class="md:hidden flex items-center">
           <button
             @click="toggleMobileMenu"
-            class="text-gray-600 hover:text-admin-600 p-2 rounded-md transition-colors"
+            class="text-gray-600 hover:text-primary-600 p-2 rounded-md transition-colors"
           >
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -99,9 +97,9 @@
       <!-- Mobile Menu -->
       <div v-if="showMobileMenu" class="md:hidden">
         <div class="px-2 pt-2 pb-3 space-y-1">
-          <RouterLink to="/admin/dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-admin-600 hover:bg-admin-50 transition-colors">Dashboard</RouterLink>
-          <RouterLink to="/admin/users" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-admin-600 hover:bg-admin-50 transition-colors">Usuários</RouterLink>
-          <RouterLink to="/admin/denuncias" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-admin-600 hover:bg-admin-50 transition-colors">Denúncias</RouterLink>
+          <RouterLink to="/admin/dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">Dashboard</RouterLink>
+          <RouterLink to="/admin/users" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">Usuários</RouterLink>
+          <RouterLink to="/admin/denuncias" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">Denúncias</RouterLink>
           
           <!-- Mobile Staff Menu -->
           <div v-if="userStore.user?.is_admin_level" class="mt-2 pt-2 border-t border-gray-200">
@@ -112,7 +110,7 @@
               <div class="px-3 py-2 text-sm font-medium text-gray-700">Relatórios</div>
               <RouterLink
                 to="/admin/reports/users"
-                class="block pl-6 pr-3 py-2 text-sm text-gray-600 hover:text-admin-600 hover:bg-admin-50"
+                class="block pl-6 pr-3 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50"
                 @click="closeMobileMenu"
               >
                 Relatório de Usuários
@@ -122,7 +120,7 @@
             <!-- Mobile Analytics -->
             <RouterLink
               to="/admin/analytics"
-              class="block px-3 py-2 text-sm text-gray-600 hover:text-admin-600 hover:bg-admin-50"
+              class="block px-3 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50"
               @click="closeMobileMenu"
             >
               Analytics
@@ -131,7 +129,7 @@
             <!-- Mobile Logs -->
             <RouterLink
               to="/admin/logs"
-              class="block px-3 py-2 text-sm text-gray-600 hover:text-admin-600 hover:bg-admin-50"
+              class="block px-3 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-primary-50"
               @click="closeMobileMenu"
             >
               Logs do Sistema
@@ -141,7 +139,7 @@
           <div class="mt-4 pt-4 border-t border-gray-200">
             <button
               @click="handleLogout"
-              class="w-full bg-admin-500 hover:bg-admin-600 text-white px-4 py-2 rounded-md cursor-pointer transition-all duration-200 hover:shadow-lg text-sm font-medium"
+              class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md cursor-pointer transition-all duration-200 hover:shadow-lg text-sm font-medium"
             >
               Sair
             </button>

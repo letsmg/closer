@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// Interface que ativa a verificação de e-mail no Laravel
+// Interface that enables email verification in Laravel
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,14 +20,14 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 
     /*
     |--------------------------------------------------------------------------
-    | Campos que podem ser preenchidos em massa
+    | Mass assignable fields
     |--------------------------------------------------------------------------
     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'uuid',              // ULID público (ofusca ID incremental)
+        'uuid',              // Public ULID (obscures incremental ID)
         'ativo',
         'nivel_acesso',      // 0 = Free | 1 = Plus | 2 = Premium
         'reputacao',
@@ -37,9 +37,19 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'premium_expira_em',
     ];
 
+    /**
+     * Atributos adicionados ao JSON
+     */
+    protected $appends = [
+        'is_admin_level',
+        'is_staff_level',
+        'nivel',
+        'main_photo_url',
+    ];
+
     /*
     |--------------------------------------------------------------------------
-    | Campos que não devem aparecer no JSON
+    | Hidden fields
     |--------------------------------------------------------------------------
     */
     protected $hidden = [
@@ -49,32 +59,32 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 
     /*
     |--------------------------------------------------------------------------
-    | Conversão automática de tipos
+    | Type casting
     |--------------------------------------------------------------------------
     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime', // Converte para objeto Carbon
+            'email_verified_at' => 'datetime', // Converts to Carbon object
             'premium_expira_em' => 'datetime',
             'ativo' => 'boolean',
-            'password' => 'hashed', // Faz hash automático ao salvar
+            'password' => 'hashed', // Automatic hash on save
         ];
     }
 
     /*
     |--------------------------------------------------------------------------
-    | RELACIONAMENTOS
+    | RELATIONSHIPS
     |--------------------------------------------------------------------------
     */
 
-    // Um usuário possui um perfil
+    // User has one profile
     public function perfil()
     {
-        return $this->hasOne(Perfil::class);
+        return $this->hasOne(Profile::class);
     }
 
-    // Usuário pode ter várias preferências (tabela pivô)
+    // User can have multiple preferences (pivot table)
     public function preferencias()
     {
         return $this->belongsToMany(
@@ -85,22 +95,22 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         );
     }
 
-    // Localidades ocultas
+    // Hidden locations
     public function localidades_ocultas()
     {
         return $this->hasMany(LocalidadeOculta::class);
     }
 
-    // Fotos do perfil
+    // Profile photos
     public function fotos()
     {
-        return $this->hasMany(FotoPerfil::class)
-                    ->orderBy('ordem', 'asc');
+        return $this->hasMany(ProfilePhoto::class)
+                    ->orderBy('order', 'asc');
     }
 
     public function isOnline()
     {
-        // Considera online se a última atividade foi nos últimos 5 minutos
+        // Consider online if last activity was within 5 minutes
         return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
     }
 
@@ -134,6 +144,39 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
      * USER LEVEL METHODS
      * --------------------------------------------------------------------------
      */
+
+    /**
+     * Accessor para is_admin_level
+     */
+    public function getIsAdminLevelAttribute(): bool
+    {
+        return $this->isAdminLevel();
+    }
+
+    /**
+     * Accessor para is_staff_level
+     */
+    public function getIsStaffLevelAttribute(): bool
+    {
+        return $this->isAdminLevel();
+    }
+
+    /**
+     * Accessor para nivel (compatibilidade)
+     */
+    public function getNivelAttribute(): int
+    {
+        return (int) $this->nivel_acesso;
+    }
+
+    /**
+     * Accessor para foto principal
+     */
+    public function getMainPhotoUrlAttribute(): ?string
+    {
+        $photo = $this->fotos()->where('is_primary', true)->first() ?? $this->fotos()->first();
+        return $photo ? $photo->full_url : null;
+    }
 
     /**
      * Retorna o nível de acesso como enum

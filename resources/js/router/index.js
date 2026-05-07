@@ -6,7 +6,7 @@ const routes = [
     path: '/',
     name: 'home',
     component: () => import('../pages/Home.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresCommon: true },
   },
   {
     path: '/login',
@@ -24,31 +24,67 @@ const routes = [
     path: '/2fa',
     name: 'two-factor',
     component: () => import('../pages/TwoFactor.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresCommon: true },
   },
   {
     path: '/feed',
     name: 'feed',
     component: () => import('../pages/Feed.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresCommon: true },
   },
   {
     path: '/profile',
     name: 'profile',
     component: () => import('../pages/Profile.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresCommon: true },
   },
   {
     path: '/matches',
     name: 'matches',
     component: () => import('../pages/Matches.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresCommon: true },
   },
   {
     path: '/chat/:id',
     name: 'chat',
     component: () => import('../pages/Chat.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresCommon: true },
+  },
+  {
+    path: '/admin/dashboard',
+    name: 'admin-dashboard',
+    component: () => import('../pages/admin/DashboardView.vue'),
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
+  {
+    path: '/admin/users',
+    name: 'admin-users',
+    component: () => import('../pages/admin/UsersView.vue'),
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
+  {
+    path: '/admin/denuncias',
+    name: 'admin-denuncias',
+    component: () => import('../pages/admin/DenunciasView.vue'),
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
+  {
+    path: '/admin/reports/users',
+    name: 'admin-reports-users',
+    component: () => import('../pages/admin/DashboardView.vue'), // Placeholder
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
+  {
+    path: '/admin/analytics',
+    name: 'admin-analytics',
+    component: () => import('../pages/admin/DashboardView.vue'), // Placeholder
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
+  {
+    path: '/admin/logs',
+    name: 'admin-logs',
+    component: () => import('../pages/admin/DashboardView.vue'), // Placeholder
+    meta: { requiresAuth: true, requiresStaff: true },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -63,17 +99,44 @@ const router = createRouter({
 });
 
 // Navigation guards
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   
-  // Check if route requires authentication
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  // Wait for auth to be initialized if we have a token but no user yet
+  // or if we haven't checked with the server yet
+  if (!authStore.isInitialized && authStore.token) {
+    await authStore.checkAuth();
+  } else if (!authStore.token) {
+    authStore.isInitialized = true;
+  }
+  
+  const isAuthenticated = authStore.isAuthenticated;
+  const isStaff = authStore.isStaffLevel;
+
+  // 1. Unauthenticated users trying to access protected routes
+  if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login' });
     return;
   }
-  
-  // Check if route is for guests only
-  if (to.meta.guest && authStore.isAuthenticated) {
+
+  // 2. Authenticated users trying to access guest routes (Login/Register)
+  if (to.meta.guest && isAuthenticated) {
+    if (isStaff) {
+      next({ name: 'admin-dashboard' });
+    } else {
+      next({ name: 'home' });
+    }
+    return;
+  }
+
+  // 3. Staff trying to access common user areas
+  if (to.meta.requiresCommon && isStaff) {
+    next({ name: 'admin-dashboard' });
+    return;
+  }
+
+  // 4. Common users trying to access staff areas
+  if (to.meta.requiresStaff && !isStaff) {
     next({ name: 'home' });
     return;
   }

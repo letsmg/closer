@@ -20,8 +20,7 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             LanguageSeeder::class,
             HobbySeeder::class,
-            UserSeeder::class,  // Add UserSeeder for staff users
-            UserSeederUpdated::class,  // Add UserSeederUpdated for regular users
+            UserSeeder::class,  // Staff users (admin, operator, etc.)
         ]);
     }
 }

@@ -115,7 +115,12 @@
             <li>GDPR for European users</li>
             <li>PDPA for Southeast Asian users</li>
             <li>Personal Data Protection Laws for Middle Eastern users</li>
+            <li>IP address and approximate geolocation derived from IP intelligence providers</li>
         </ul>
+        <p>
+            We use IP and geolocation data strictly for account security, fraud prevention, compliance checks,
+            abuse detection, and internal audit logging. We do not sell this data to third parties.
+        </p>
 
         <h3>4.2 Data Security</h3>
         <p>We implement industry-standard security measures including:</p>
@@ -215,7 +220,11 @@
 
     <div class="section">
         <h2>11. Updates and Modifications</h2>
-        <p>Closer reserves the right to modify these terms at any time. Users will be notified of significant changes via email or in-app notifications. Continued use of the service constitutes acceptance of modified terms.</p>
+        <p>
+            Closer may update these Terms at any time, with or without prior notice. When required by law or by our
+            internal compliance policy, we may request a new acceptance in-app and/or by email before you continue
+            using the service.
+        </p>
     </div>
 
     <div class="section">

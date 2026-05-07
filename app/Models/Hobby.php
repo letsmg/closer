@@ -3,18 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Hobby extends Model
 {
-    protected $fillable = ['nome', 'categoria'];
+    use HasFactory;
+    
+    protected $table = 'hobbies';
+    protected $fillable = ['name', 'description', 'category', 'icon', 'active'];
 
-    public function perfis()
+    public function profiles()
     {
-        return $this->belongsToMany(Perfil::class, 'perfil_hobbies')->withTimestamps();
+        return $this->belongsToMany(Profile::class, 'profile_hobbies')->withTimestamps();
     }
 
-    public function buscadoPorPerfis()
+    public function profilePreferences()
     {
-        return $this->belongsToMany(Perfil::class, 'perfil_hobbies_preferencias')->withTimestamps();
+        return $this->belongsToMany(Profile::class, 'profile_hobby_preferences')->withTimestamps();
     }
 }

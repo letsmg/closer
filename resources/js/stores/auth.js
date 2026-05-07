@@ -4,15 +4,28 @@ import api from '../api';
 
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const user = ref(null);
+  const user = ref(JSON.parse(localStorage.getItem('user')) || null);
   const token = ref(localStorage.getItem('access_token'));
   const refreshToken = ref(localStorage.getItem('refresh_token'));
   const loading = ref(false);
+  const isInitialized = ref(false);
   const error = ref(null);
 
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value);
   const userUuid = computed(() => user.value?.uuid);
+  const isAdminLevel = computed(() => {
+    const level = user.value?.nivel_acesso ?? user.value?.nivel;
+    return level !== undefined && level >= 3;
+  });
+  const isStaffLevel = computed(() => {
+    const level = user.value?.nivel_acesso ?? user.value?.nivel;
+    return level !== undefined && level >= 3;
+  });
+  const isRegularUser = computed(() => {
+    const level = user.value?.nivel_acesso ?? user.value?.nivel;
+    return level !== undefined && level < 3;
+  });
 
   // Actions
   const setAuth = (authData) => {
@@ -22,6 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
     
     localStorage.setItem('access_token', authData.access_token);
     localStorage.setItem('refresh_token', authData.refresh_token);
+    localStorage.setItem('user', JSON.stringify(authData.user));
     
     // Set default header for axios
     api.defaults.headers.common['Authorization'] = `Bearer ${authData.access_token}`;
@@ -35,6 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
     
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
     
     delete api.defaults.headers.common['Authorization'];
   };
@@ -94,14 +109,29 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const checkAuth = async () => {
-    if (!token.value) return;
+    if (!token.value) {
+      isInitialized.value = true;
+      return;
+    }
     
     try {
       api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
       const response = await api.get('/api/auth/me');
-      user.value = response.data.data.user;
+      
+      if (response.data && response.data.success) {
+        user.value = response.data.data.user;
+        localStorage.setItem('user', JSON.stringify(user.value));
+      } else {
+        throw new Error('Invalid response');
+      }
     } catch (err) {
-      clearAuth();
+      console.error('CheckAuth failed:', err);
+      // Only clear auth if it's a 401 Unauthorized or 403 Forbidden
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        clearAuth();
+      }
+    } finally {
+      isInitialized.value = true;
     }
   };
 
@@ -148,8 +178,12 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     refreshToken,
     loading,
+    isInitialized,
     error,
     isAuthenticated,
+    isAdminLevel,
+    isStaffLevel,
+    isRegularUser,
     userUuid,
     login,
     register,

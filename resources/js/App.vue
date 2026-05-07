@@ -14,13 +14,15 @@ import TermsModal from './components/TermsModal.vue';
 
 const authStore = useAuthStore();
 const accepted = ref(false);
+const TERMS_VERSION = '2026-05-05';
 
 onMounted(() => {
   // Check for stored token on app load
   authStore.checkAuth();
   // Check if terms accepted
   const stored = localStorage.getItem('acceptedTerms');
-  accepted.value = stored === 'true';
+  const storedVersion = localStorage.getItem('acceptedTermsVersion');
+  accepted.value = stored === 'true' && storedVersion === TERMS_VERSION;
 });
 
 const onAccepted = () => {

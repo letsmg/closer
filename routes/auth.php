@@ -52,14 +52,15 @@ Route::prefix('api/auth')->group(function () {
 
 Route::middleware(['web'])->group(function () {
     
-    // Rotas públicas
+    // Rotas comentadas para evitar conflito com o Vue SPA
+    /*
     Route::get('/login', [WebAuthController::class, 'showLoginForm'])
         ->name('login')
         ->middleware('guest');
     
     Route::post('/login', [WebAuthController::class, 'login'])
         ->name('login.post')
-        ->middleware(['guest', 'throttle:5,1']); // 5 tentativas por minuto
+        ->middleware(['guest', 'throttle:5,1']);
     
     Route::get('/register', [WebAuthController::class, 'showRegisterForm'])
         ->name('register')
@@ -67,7 +68,8 @@ Route::middleware(['web'])->group(function () {
     
     Route::post('/register', [WebAuthController::class, 'register'])
         ->name('register.post')
-        ->middleware(['guest', 'throttle:3,1']); // 3 registros por minuto
+        ->middleware(['guest', 'throttle:3,1']);
+    */
     
     // Rotas protegidas (requerem sessão)
     Route::post('/logout', [WebAuthController::class, 'logout'])

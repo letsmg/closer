@@ -94,10 +94,25 @@ class UserController extends Controller
     {
         $this->authorize('manage-users');
         
-        $users = User::with('profile')
+        $users = User::with('perfil')
+            ->withCount(['fotos'])
+            ->leftJoin('reports', 'users.id', '=', 'reports.reported_id')
+            ->select('users.*', DB::raw('COUNT(reports.id) as reports_count'))
+            ->groupBy('users.id')
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                $query->where(function($q) use ($search) {
+                    $q->where('users.name', 'like', "%{$search}%")
+                      ->orWhere('users.email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filter === 'staff', function ($query) {
+                $query->where('nivel_acesso', '>=', 3);
+            })
+            ->when($request->filter === 'regular', function ($query) {
+                $query->where('nivel_acesso', '<', 3);
+            })
+            ->when($request->filter === 'reported', function ($query) {
+                $query->having('reports_count', '>', 0);
             })
             ->when($request->level, function ($query, $level) {
                 $query->where('nivel_acesso', $level);

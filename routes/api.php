@@ -12,13 +12,11 @@ use App\Http\Controllers\Api\{
     PaymentController,
     ShortsController,
     ChatController,
-    FotoController,
-    PerfilController,
+    ProfileController,
     InteractionController,
-    SegundaChanceController,
     UserController,
     LikeController,
-    BloqueioController
+    BlockController
 };
 
 
@@ -39,7 +37,23 @@ use App\Http\Controllers\Api\{
 
 // Mantém compatibilidade temporária com rotas antigas (serão removidas)
 Route::post('/cadastrar', [UserController::class, 'cadastrar'])->name('cadastrar.legacy');
-Route::post('/login', [JwtAuthController::class, 'login'])->name('login');
+Route::post('/login', [JwtAuthController::class, 'login'])->name('api.login');
+
+/*
+|--------------------------------------------------------------------------
+| AUTH API (JWT)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [JwtAuthController::class, 'register']);
+    Route::post('/login', [JwtAuthController::class, 'login']);
+    
+    Route::middleware(['auth:api'])->group(function () {
+        Route::get('/me', [JwtAuthController::class, 'me'])->name('api.auth.me');
+        Route::post('/logout', [JwtAuthController::class, 'logout']);
+        Route::post('/refresh', [JwtAuthController::class, 'refresh']);
+    });
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -109,10 +123,10 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     */
 
     Route::get('/user', fn(Request $request) => $request->user());
-    Route::get('/perfil', [PerfilController::class, 'show']);
-    Route::put('/perfil', [PerfilController::class, 'update']);
-    Route::post('/perfil/atualizar-localizacao', [LocalizacaoController::class, 'atualizarLocalizacao']);
-    Route::post('/perfil/aceitar-promocao', [PerfilController::class, 'aceitarPromocao']);
+    Route::get('/perfil', [ProfileController::class, 'show']);
+    Route::put('/perfil', [ProfileController::class, 'update']);
+    Route::post('/perfil/atualizar-localizacao', [LocationController::class, 'atualizarLocalizacao']);
+    // Route::post('/perfil/aceitar-promocao', [PerfilController::class, 'aceitarPromocao']);
 
     /*
     |--------------------------------------------------------------------------
@@ -138,8 +152,8 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/segundas-chances', [SegundaChanceController::class, 'index']);
-    Route::post('/segundas-chances/{id}/usar', [SegundaChanceController::class, 'usar']);
+    // Route::get('/segundas-chances', [SegundaChanceController::class, 'index']);
+    // Route::post('/segundas-chances/{id}/usar', [SegundaChanceController::class, 'usar']);
 
     /*
     |--------------------------------------------------------------------------
@@ -156,9 +170,9 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::post('/fotos', [FotoController::class, 'upload']);
-    Route::delete('/fotos/{id}', [FotoController::class, 'destroy']);
-    Route::post('/fotos/reordenar', [FotoController::class, 'reordenar']);
+    // Route::post('/fotos', [FotoController::class, 'upload']);
+    // Route::delete('/fotos/{id}', [FotoController::class, 'destroy']);
+    // Route::post('/fotos/reordenar', [FotoController::class, 'reordenar']);
 
     /*
     |--------------------------------------------------------------------------
@@ -198,5 +212,17 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     Route::post('/2fa/confirm', [TwoFactorController::class, 'confirm']);
     Route::post('/2fa/disable', [TwoFactorController::class, 'disable']);
     Route::post('/2fa/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN ROUTES
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['level:staff'])->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{user}', [UserController::class, 'show']);
+        Route::put('/users/{user}', [UserController::class, 'update']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
+    });
 
 });

@@ -41,7 +41,12 @@ class CheckUserLevel
         foreach ($levels as $requiredLevel) {
             $requiredEnum = UserLevel::fromString($requiredLevel);
             
-            if ($requiredEnum && $userLevel->value >= $requiredEnum->value) {
+            if ($requiredLevel === 'staff') {
+                if ($userLevel->value >= UserLevel::ADMIN->value) {
+                    $hasAccess = true;
+                    break;
+                }
+            } elseif ($requiredEnum && $userLevel->value >= $requiredEnum->value) {
                 $hasAccess = true;
                 break;
             }

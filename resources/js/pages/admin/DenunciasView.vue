@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-admin-50">
+  <div class="min-h-screen bg-primary-50">
     <AdminNavigationMenu />
     
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
         <div class="bg-white rounded-lg shadow">
           <div class="px-6 py-4 border-b border-gray-200">
-            <h1 class="text-2xl font-bold text-admin-900">Denúncias</h1>
+            <h1 class="text-2xl font-bold text-primary-900">Denúncias</h1>
             <p class="mt-1 text-sm text-gray-600">
               Gerencie todas as denúncias do sistema
             </p>
@@ -17,7 +17,7 @@
             <div class="flex flex-col sm:flex-row gap-4">
               <select
                 v-model="filters.status"
-                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               >
                 <option value="">Todos os status</option>
                 <option value="pending">Pendentes</option>
@@ -27,7 +27,7 @@
               
               <select
                 v-model="filters.motivo"
-                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               >
                 <option value="">Todos os motivos</option>
                 <option value="importunacao">Importunação</option>
@@ -38,7 +38,7 @@
 
               <button
                 @click="loadDenuncias"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-admin-600 hover:bg-admin-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-admin-500"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 Filtrar
               </button>
@@ -48,7 +48,7 @@
           <!-- Lista de Denúncias -->
           <div class="overflow-hidden">
             <div v-if="loading" class="px-6 py-8 text-center">
-              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-admin-600"></div>
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
               <p class="mt-2 text-gray-600">Carregando denúncias...</p>
             </div>
 
@@ -105,7 +105,7 @@
                   <div class="mt-4 lg:mt-0 lg:ml-4 flex flex-col sm:flex-row gap-2">
                     <button
                       @click="viewDenuncia(denuncia)"
-                      class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     >
                       Visualizar
                     </button>
@@ -113,7 +113,7 @@
                     <button
                       v-if="denuncia.status !== 'analyzed'"
                       @click="markAsAnalyzed(denuncia)"
-                      class="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded text-white bg-admin-600 hover:bg-admin-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-admin-500"
+                      class="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     >
                       Marcar como Analisada
                     </button>
@@ -238,7 +238,7 @@
             <button
               @click="closeModal"
               type="button"
-              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-admin-600 text-base font-medium text-white hover:bg-admin-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-admin-500 sm:ml-3 sm:w-auto sm:text-sm"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Fechar
             </button>
@@ -334,7 +334,7 @@ const markAsResolved = async (denuncia) => {
 const getStatusClass = (status) => {
   const classes = {
     pending: 'bg-yellow-100 text-yellow-800',
-    analyzed: 'bg-blue-100 text-blue-800',
+    analyzed: 'bg-primary-100 text-primary-800',
     resolved: 'bg-green-100 text-green-800'
   };
   return classes[status] || 'bg-gray-100 text-gray-800';

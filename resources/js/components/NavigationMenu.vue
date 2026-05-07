@@ -13,7 +13,7 @@
           <RouterLink to="/profile" class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-50 transition-colors">Perfil</RouterLink>
           
           <!-- Staff Menu -->
-          <div v-if="userStore.user?.is_admin_level" class="relative">
+          <div v-if="userStore.isStaffLevel" class="relative">
             <button
               @click="toggleStaffMenu"
               class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium flex items-center hover:bg-primary-50 transition-colors"
@@ -71,13 +71,11 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Botão Sair sempre visível -->
-        <div class="hidden md:flex items-center">
+          <!-- Botão Sair Desktop -->
           <button
             @click="handleLogout"
-            class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md cursor-pointer transition-all duration-200 hover:shadow-lg text-sm font-medium"
+            class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 transition-colors cursor-pointer"
           >
             Sair
           </button>

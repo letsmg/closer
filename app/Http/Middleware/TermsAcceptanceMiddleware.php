@@ -35,9 +35,15 @@ class TermsAcceptanceMiddleware
             return $next($request);
         }
 
-        // Check if user has accepted terms
-        $termsAccepted = $request->cookie('terms_accepted') || 
-                         $request->header('X-Terms-Accepted');
+        $requiredVersion = (string) config('terms.version', '2026-05-05');
+        $acceptedVersion = (string) (
+            $request->cookie('terms_accepted_version')
+            ?: $request->header('X-Terms-Accepted-Version')
+        );
+
+        // Backward compatibility with older single-flag clients.
+        $legacyAccepted = (bool) ($request->cookie('terms_accepted') || $request->header('X-Terms-Accepted'));
+        $termsAccepted = $acceptedVersion === $requiredVersion || ($legacyAccepted && $acceptedVersion === '');
 
         if (!$termsAccepted) {
             // Store intended URL for redirect after acceptance

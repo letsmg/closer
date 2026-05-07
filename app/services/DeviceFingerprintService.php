@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Events\NewDeviceLogin;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use Stevebauman\Location\Facades\Location;
 
 /**
  * Service para Device Fingerprinting
@@ -181,12 +182,35 @@ class DeviceFingerprintService
      */
     private function getLocationByIp(string $ip): string
     {
-        // Em produção, usar serviço como GeoIP2 ou ipinfo.io
         if ($ip === '127.0.0.1' || $ip === '::1') {
             return 'Localhost';
         }
-        
-        // Simulação - em produção usar API real
-        return 'Unknown Location';
+
+        $cacheKey = "geoip:" . md5($ip);
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return $cached;
+        }
+
+        try {
+            $position = Location::get($ip);
+
+            if (!$position) {
+                return 'Unknown Location';
+            }
+
+            $parts = array_filter([
+                $position->cityName ?? null,
+                $position->regionName ?? null,
+                $position->countryName ?? null,
+            ]);
+
+            $location = !empty($parts) ? implode(', ', $parts) : 'Unknown Location';
+            Cache::put($cacheKey, $location, now()->addHours(12));
+
+            return $location;
+        } catch (\Throwable $e) {
+            return 'Unknown Location';
+        }
     }
 }

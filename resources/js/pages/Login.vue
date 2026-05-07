@@ -74,7 +74,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const form = reactive({
-  email: 'admin@closer.com', // Default test admin user
+  email: 'admin@1.com', // Default test admin user
   password: 'Mudar@123', // Default test password (matches seeders)
   twoFactorCode: '',
 });
@@ -88,7 +88,11 @@ const handleLogin = async () => {
   });
   
   if (result.success) {
-    router.push('/');
+    if (authStore.isStaffLevel) {
+      router.push('/admin/dashboard');
+    } else {
+      router.push('/');
+    }
   } else if (result.requires_2fa) {
     requires2FA.value = true;
   }

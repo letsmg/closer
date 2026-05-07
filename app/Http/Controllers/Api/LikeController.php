@@ -9,7 +9,7 @@ use App\Models\SecondChance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LikeControllerUpdated extends Controller
+class LikeController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
