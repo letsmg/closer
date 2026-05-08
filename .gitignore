@@ -12,6 +12,7 @@ Thumbs.db
 # Ambiente / Configurações sensíveis
 # -----------------------------
 .env
+.env*
 .env.backup
 .env.production
 auth.json

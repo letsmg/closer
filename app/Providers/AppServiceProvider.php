@@ -30,5 +30,17 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('view-analytics', function (User $user) {
             return $user->canViewAnalytics();
         });
+
+        Gate::define('manage-reports', function (User $user) {
+            return $user->canModerateContent();
+        });
+
+        Gate::define('view-reports', function (User $user) {
+            return $user->canModerateContent();
+        });
+
+        Gate::define('manage-users', function (User $user) {
+            return $user->canManageUsers();
+        });
     }
 }

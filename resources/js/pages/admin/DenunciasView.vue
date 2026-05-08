@@ -12,6 +12,7 @@
                 Analise e resolva as denúncias enviadas pelos usuários.
               </p>
             </div>
+          </div>
 
           <!-- Filtros -->
           <div class="px-6 py-4 border-b border-gray-200">
@@ -112,7 +113,7 @@
                     </button>
                     
                     <button
-                      v-if="denuncia.status !== 'analyzed'"
+                      v-if="denuncia.status === 'pending'"
                       @click="markAsAnalyzed(denuncia)"
                       class="inline-flex items-center px-4 py-2 border border-primary-200 shadow-sm text-xs font-bold rounded-lg text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
                     >
@@ -122,7 +123,7 @@
                     <button
                       v-if="denuncia.status !== 'resolved'"
                       @click="markAsResolved(denuncia)"
-                      class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-xs font-bold rounded-lg text-white bg-success-600 hover:bg-success-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success-500 transition-all hover:shadow-md"
+                      class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-xs font-black rounded-lg text-white bg-primary-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all hover:shadow-md uppercase tracking-tighter"
                     >
                       Marcar como Resolvida
                     </button>
@@ -187,8 +188,8 @@
     <!-- Modal de Visualização -->
     <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto">
       <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Overlay mais moderno -->
-        <div class="fixed inset-0 bg-gray-900/50 transition-opacity" @click="closeModal"></div>
+        <!-- Overlay transparente (clique fora para fechar) -->
+        <div class="fixed inset-0 bg-transparent transition-opacity" @click="closeModal"></div>
 
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
@@ -273,7 +274,7 @@
               v-if="selectedDenuncia?.status !== 'resolved'"
               @click="markAsResolved(selectedDenuncia); closeModal()"
               type="button"
-              class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-success-600 text-sm font-bold text-white hover:bg-success-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success-500 transition-all sm:w-auto"
+              class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2.5 bg-primary-900 text-sm font-black text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all sm:w-auto uppercase"
             >
               Resolver Agora
             </button>
@@ -285,7 +286,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import AdminNavigationMenu from '../../components/AdminNavigationMenu.vue';
 import api from '../../api';
 
@@ -302,6 +303,12 @@ const filters = ref({
 });
 
 const hasNextPage = ref(false);
+
+// Filtros automáticos
+watch(filters, () => {
+  currentPage.value = 1;
+  loadDenuncias();
+}, { deep: true });
 
 const loadDenuncias = async () => {
   loading.value = true;
