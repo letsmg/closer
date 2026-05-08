@@ -13,6 +13,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use App\Traits\SanitizesOutput;
 
 /**
  * Controller de Autenticação JWT
@@ -23,6 +24,8 @@ use Tymon\JWTAuth\Exceptions\TokenInvalidException;
  */
 class JwtAuthController extends Controller
 {
+    use SanitizesOutput;
+
     /**
      * --------------------------------------------------------------------------
      * REGISTRO DE USUÁRIO
@@ -198,7 +201,7 @@ class JwtAuthController extends Controller
                 return $this->respondWithError('Usuário não encontrado.', 404);
             }
 
-            return response()->json([
+            return $this->safeJsonResponse([
                 'success' => true,
                 'data' => [
                     'user' => $user->load('perfil'),
@@ -216,6 +219,52 @@ class JwtAuthController extends Controller
         } catch (JWTException $e) {
             return $this->respondWithError('Token não fornecido.', 401);
         }
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * VERIFICAÇÃO DE E-MAIL
+     * --------------------------------------------------------------------------
+     */
+
+    /**
+     * Verifica o e-mail do usuário via link assinado
+     */
+    public function verify(Request $request)
+    {
+        // Verifica se a assinatura do link é válida
+        if (!$request->hasValidSignature()) {
+            // Em vez de erro JSON, redireciona para uma página de erro ou login com erro
+            return redirect(config('app.url') . '/login?error=invalid_signature');
+        }
+
+        $user = User::findOrFail($request->id);
+
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+            
+            // Log de verificação
+            \Log::info("E-mail verificado para o usuário: {$user->email}");
+        }
+
+        // Redireciona para o login com mensagem de sucesso
+        return redirect(config('app.url') . '/login?verified=1');
+    }
+
+    /**
+     * Reenvia o e-mail de verificação
+     */
+    public function resend(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->respondWithError('Este e-mail já foi verificado.', 400);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return $this->respondWithSuccess('E-mail de verificação reenviado com sucesso.');
     }
 
     /**
@@ -244,9 +293,6 @@ class JwtAuthController extends Controller
      * --------------------------------------------------------------------------
      */
     
-    /**
-     * Resposta padronizada com token
-     */
     protected function respondWithToken(string $token, User $user, string $message = 'Sucesso', int $status = 200)
     {
         $response = [
@@ -260,13 +306,7 @@ class JwtAuthController extends Controller
             ]
         ];
 
-        // Se for requisição web (não JSON), pode adicionar cookie
-        if (!request()->wantsJson() && !request()->ajax()) {
-            // Para web, você pode querer retornar redirect ou view
-            // Por enquanto mantemos JSON para consistência
-        }
-
-        return response()->json($response, $status);
+        return $this->safeJsonResponse($response, $status);
     }
 
     /**
@@ -280,7 +320,7 @@ class JwtAuthController extends Controller
             $response['data'] = $data;
         }
 
-        return response()->json($response, $status);
+        return $this->safeJsonResponse($response, $status);
     }
 
     /**
@@ -288,7 +328,7 @@ class JwtAuthController extends Controller
      */
     protected function respondWithError(string $message, int $status = 400)
     {
-        return response()->json([
+        return $this->safeJsonResponse([
             'success' => false,
             'message' => $message,
             'errors' => null,
@@ -300,7 +340,7 @@ class JwtAuthController extends Controller
      */
     protected function respondWithErrors($errors, int $status = 422)
     {
-        return response()->json([
+        return $this->safeJsonResponse([
             'success' => false,
             'message' => 'Erros de validação.',
             'errors' => $errors,

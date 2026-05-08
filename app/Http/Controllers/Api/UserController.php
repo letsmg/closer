@@ -10,9 +10,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Traits\SanitizesOutput;
 
 class UserController extends Controller
 {
+    use SanitizesOutput;
+
     /*
     |--------------------------------------------------------------------------
     | REGISTRATION
@@ -24,60 +27,127 @@ class UserController extends Controller
     */
     public function register(Request $request)
     {
-        // 1. Validation (Add confirmed for security)
-        $request->validate([
+        // 1. Validation
+        $validator = Validator::make($request->all(), [
             'name'      => 'required|string|max:255',
             'email'     => 'required|string|email|max:255|unique:users',
-            'password'  => 'required|string|min:8|confirmed', // Android should send password_confirmation
-
-            // Profile data
-            'age'     => 'required|integer',
+            'password'  => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/'
+            ],
+            'birth_date' => 'required|date|before:today',
             'gender'      => 'required|string',
-            'country_id'   => 'required|exists:countries,id',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erros de validação.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         try {
             return DB::transaction(function () use ($request) {
-
                 // 2. User creation
                 $user = User::create([
                     'name'      => $request->name,
-                    'email'     => $request->email,
+                    'email'     => strtolower(trim($request->email)),
                     'password'  => Hash::make($request->password),
-                    'last_ip' => $request->ip(),
+                    'ultimo_ip' => $request->ip(),
+                    'uuid'      => (string) Str::ulid(),
+                    'nivel_acesso' => 0, // Consumer default
                 ]);
 
                 // 3. Profile creation
                 Profile::create([
                     'user_id' => $user->id,
-                    'nickname' => $request->name,
-                    'birth_date' => now()->subYears($request->age),
+                    'nickname' => $request->nickname ?? $request->name,
+                    'birth_date' => $request->birth_date,
                     'gender' => $request->gender,
-                    'gender_identity' => 'cisgender',
-                    'sexual_orientation' => 'heterosexual',
-                    'purpose' => 'all',
-                    'profession' => null,
-                    'biography' => null,
-                    'smoker' => false,
-                    'drinker' => false,
-                    'marital_status' => 'single',
-                    'country_id' => $request->country_id,
-                    'state_id' => $request->state_id,
-                    'city_id' => $request->city_id,
+                    'gender_identity' => $request->gender_identity,
+                    'sexual_orientation' => $request->sexual_orientation,
+                    'purpose' => $request->purpose ?? 'all',
                     'visibility' => 'public',
                 ]);
 
                 return response()->json([
-                    'message' => 'User registered successfully',
-                    'user' => $user->load('profile')
+                    'success' => true,
+                    'message' => 'Usuário registrado com sucesso',
+                    'user' => $user->load('perfil')
                 ], 201);
             });
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Registration failed',
-                'message' => $e->getMessage()
+            return $this->safeJsonResponse([
+                'success' => false,
+                'message' => 'Falha no registro: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create new user (admin only)
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', User::class);
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/'
+            ],
+            'nivel_acesso' => 'required|integer|min:3|max:5', // Only Staff
+        ]);
+
+        if ($validator->fails()) {
+            return $this->safeJsonResponse([
+                'success' => false,
+                'message' => 'Dados inválidos.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            return DB::transaction(function () use ($request) {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => strtolower(trim($request->email)),
+                    'password' => Hash::make($request->password),
+                    'nivel_acesso' => $request->nivel_acesso,
+                    'ativo' => true,
+                    'uuid' => (string) Str::ulid(),
+                ]);
+
+                // Para Staff, o perfil é simplificado
+                Profile::create([
+                    'user_id' => $user->id,
+                    'nickname' => $request->name,
+                    'birth_date' => now()->subYears(20), // Placeholder
+                    'gender' => 'other',
+                    'gender_identity' => 'Not Specified',
+                    'sexual_orientation' => 'Not Specified',
+                    'purpose' => 'networking',
+                    'visibility' => 'hidden', // Staff não aparece no feed
+                ]);
+
+                return $this->safeJsonResponse([
+                    'success' => true,
+                    'message' => 'Usuário do staff criado com sucesso.',
+                    'user' => $user->load('perfil')
+                ], 201);
+            });
+        } catch (\Exception $e) {
+            return $this->safeJsonResponse([
+                'success' => false,
+                'message' => 'Erro ao criar usuário: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -119,9 +189,9 @@ class UserController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
-            return response()->json($users);
+            return $this->safeJsonResponse($users->toArray());
         } catch (\Exception $e) {
-            return response()->json([
+            return $this->safeJsonResponse([
                 'success' => false,
                 'message' => 'Error fetching users: ' . $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -138,7 +208,7 @@ class UserController extends Controller
         
         $user->load(['perfil', 'perfil.photos', 'perfil.hobbies']);
         
-        return response()->json($user);
+        return $this->safeJsonResponse($user->toArray());
     }
 
     /**
@@ -166,7 +236,7 @@ class UserController extends Controller
             $user->perfil()->update($request->input('profile'));
         }
         
-        return response()->json($user->load('perfil'));
+        return $this->safeJsonResponse($user->load('perfil')->toArray());
     }
 
     /**

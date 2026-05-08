@@ -55,8 +55,8 @@
             </div>
           </div>
 
-          <!-- Seção de Perfil -->
-          <div>
+          <!-- Seção de Perfil (Apenas para Consumidores) -->
+          <div v-if="isConsumer">
             <h3 class="text-lg font-semibold text-primary-900 border-b border-primary-100 pb-2 mb-4 flex items-center">
               <svg class="h-5 w-5 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
@@ -84,7 +84,18 @@
           </div>
 
           <div class="pt-6 border-t border-primary-100 flex items-center justify-between">
-            <p class="text-xs text-gray-400">ID Público: <span class="font-mono">{{ route.params.id }}</span></p>
+            <div class="flex flex-col">
+              <p class="text-xs text-gray-400">ID Público: <span class="font-mono">{{ route.params.id }}</span></p>
+              <div class="flex gap-4 text-[10px] text-gray-400 mt-1">
+                <button @click="fillConsumerForm" type="button" class="hover:text-primary-600 transition-colors underline uppercase tracking-widest">Preencher Teste</button>
+                <button @click="clearForm" type="button" class="hover:text-red-500 transition-colors underline uppercase tracking-widest">Limpar</button>
+              </div>
+            </div>
+
+            <div v-if="error" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {{ error }}
+            </div>
+
             <div class="flex gap-4">
               <button 
                 type="button" 
@@ -109,14 +120,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../api';
+import { useFormTester } from '../../composables/useFormTester';
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 const saving = ref(false);
+const error = ref('');
 
 const form = ref({ 
   name: '', 
@@ -128,6 +141,13 @@ const form = ref({
     gender: '',
     biography: ''
   }
+});
+
+const { fillConsumerForm, clearForm } = useFormTester(form.value);
+
+const isConsumer = computed(() => {
+  const level = parseInt(form.value.nivel_acesso);
+  return level < 3; // Níveis 0, 1, 2 são consumidores
 });
 
 const fetchUser = async () => {
@@ -162,9 +182,9 @@ const saveUser = async () => {
     await api.put(`/users/${id}`, form.value);
     alert('Usuário atualizado com sucesso!');
     router.push('/admin/users'); // Redireciona para a lista correta
-  } catch (error) {
-    console.error('Erro ao salvar:', error);
-    alert('Erro ao salvar as alterações.');
+  } catch (err) {
+    console.error('Erro ao salvar:', err);
+    error.value = err.response?.data?.message || 'Erro ao salvar as alterações.';
   } finally {
     saving.value = false;
   }

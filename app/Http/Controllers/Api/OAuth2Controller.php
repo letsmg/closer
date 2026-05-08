@@ -91,7 +91,7 @@ class OAuth2Controller extends Controller
                 'required',
                 'string',
                 'min:8',
-                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).+$/',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/',
             ],
         ], [
             'username.required' => 'O email é obrigatório.',
@@ -99,7 +99,7 @@ class OAuth2Controller extends Controller
             'password.required' => 'A senha é obrigatória.',
             'password.string' => 'A senha deve ser um texto.',
             'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
-            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula e 1 caractere especial (!@#$%^&*()).',
+            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula, 1 letra minúscula e 1 caractere especial (!@#$%^&*()).',
         ]);
 
         if ($validator->fails()) {

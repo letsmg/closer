@@ -27,7 +27,7 @@ class RegisterRequest extends SanitizedRequest
                 'string',
                 'min:8',
                 'confirmed',
-                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).+$/',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/',
             ],
             'password_confirmation' => 'required|string|min:8|max:255',
         ];
@@ -49,7 +49,7 @@ class RegisterRequest extends SanitizedRequest
             'password.string' => 'A senha deve ser um texto.',
             'password.min' => 'A senha deve ter pelo menos 8 caracteres.',
             'password.confirmed' => 'A confirmação de senha não confere.',
-            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula e 1 caractere especial (!@#$%^&*()).',
+            'password.regex' => 'A senha deve conter pelo menos 1 letra maiúscula, 1 letra minúscula e 1 caractere especial (!@#$%^&*()).',
             'password_confirmation.required' => 'A confirmação de senha é obrigatória.',
             'password_confirmation.string' => 'A confirmação de senha deve ser um texto.',
             'password_confirmation.min' => 'A confirmação de senha deve ter pelo menos 8 caracteres.',

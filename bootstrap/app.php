@@ -22,8 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // Adiciona os middlewares para as rotas da API
         $middleware->api(append: [
+            \App\Http\Middleware\SanitizeInput::class,
             RegistrarAcesso::class,
-            UpdateUserOnlineStatus::class, // Adicionado aqui
+            UpdateUserOnlineStatus::class,
         ]);
 
         // Aliases dos middlewares

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\JwtAuthController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Web\WebAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,7 +31,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('api/auth')->group(function () {
     
     // Rotas públicas
-    Route::post('/register', [JwtAuthController::class, 'register'])->name('api.auth.register');
+    Route::post('/register', [UserController::class, 'register'])->name('api.auth.register');
     Route::post('/login', [JwtAuthController::class, 'login'])->name('api.auth.login');
     
     // Rotas protegidas (requerem JWT)
@@ -84,15 +85,15 @@ Route::middleware(['web'])->group(function () {
 | Suporta tanto web quanto API
 */
 
-// Web - Verificação de email padrão do Laravel
+// Web - Verificação de email (pode ser usado por ambos se redirecionar corretamente)
+Route::get('/email/verify/{id}/{hash}', [JwtAuthController::class, 'verify'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/email/verify', function () {
         return view('auth.verify-email');
     })->name('verification.notice');
-    
-    Route::get('/email/verify/{id}/{hash}', function ($id, $hash) {
-        // Implementação padrão do Laravel
-    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
     
     Route::post('/email/verification-notification', function () {
         request()->user()->sendEmailVerificationNotification();

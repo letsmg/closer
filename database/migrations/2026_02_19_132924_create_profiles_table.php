@@ -23,8 +23,8 @@ return new class extends Migration
 
             // Identity
             $table->enum('gender', ['male','female','non_binary','other']);
-            $table->string('gender_identity');
-            $table->string('sexual_orientation');
+            $table->string('gender_identity')->nullable();
+            $table->string('sexual_orientation')->nullable();
             $table->enum('purpose', ['serious','casual','friendship','networking','all']);
 
             // Professional

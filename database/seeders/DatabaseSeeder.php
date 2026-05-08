@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             LanguageSeeder::class,
             HobbySeeder::class,
             UserSeeder::class,  // Staff users (admin, operator, etc.)
+            ReportSeeder::class,
         ]);
     }
 }

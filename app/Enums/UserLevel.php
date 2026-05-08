@@ -109,7 +109,7 @@ enum UserLevel: int
     public function canViewAnalytics(): bool
     {
         // Todos os níveis de staff (3, 4, 5) podem ver analytics
-        return $this->value >= self::ADMIN->value;
+        return $this->isStaff();
     }
 
     /**
@@ -118,7 +118,23 @@ enum UserLevel: int
     public function canModerateContent(): bool
     {
         // Todos os níveis de staff (3, 4, 5) podem moderar
+        return $this->isStaff();
+    }
+
+    /**
+     * Verifica se o nível pertence ao staff (administrativo)
+     */
+    public function isStaff(): bool
+    {
         return $this->value >= self::ADMIN->value;
+    }
+
+    /**
+     * Verifica se o nível é de consumidor (usuário final)
+     */
+    public function isConsumer(): bool
+    {
+        return $this->value < self::ADMIN->value;
     }
 
     /**
@@ -210,13 +226,34 @@ enum UserLevel: int
     }
 
     /**
-     * Retorna apenas os níveis administrativos
+     * Retorna apenas os níveis administrativos (Staff)
      */
     public static function getAdminLevels(): array
+    {
+        return self::getStaffLevels();
+    }
+
+    /**
+     * Retorna todos os níveis de staff
+     */
+    public static function getStaffLevels(): array
     {
         return [
             self::ADMIN,
             self::OPERATIONAL,
+            self::SUPPORT,
+        ];
+    }
+
+    /**
+     * Retorna todos os níveis de consumidor
+     */
+    public static function getConsumerLevels(): array
+    {
+        return [
+            self::FREE,
+            self::PLUS,
+            self::PREMIUM,
         ];
     }
 
@@ -236,6 +273,8 @@ enum UserLevel: int
             'SUPPORT' => self::SUPPORT,
             'SUPORTE' => self::SUPPORT,
             'STAFF' => self::ADMIN,
+            'CONSUMER' => self::FREE,
+            'CONSUMIDOR' => self::FREE,
             default => null,
         };
     }

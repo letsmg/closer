@@ -134,8 +134,8 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err) {
       console.error('CheckAuth failed:', err);
-      // Only clear auth if it's a 401 Unauthorized or 403 Forbidden
-      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+      // Limpa a autenticação se o servidor retornar erro (exceto erro de conexão)
+      if (err.response) {
         clearAuth();
       }
     } finally {

@@ -31,8 +31,8 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    // If 401 and not already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If 401 and not already retried and not a token request itself
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/oauth/token')) {
       originalRequest._retry = true;
       
       const authStore = useAuthStore();

@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use App\Traits\SanitizesOutput;
 
 class LocationController extends Controller
 {
+    use SanitizesOutput;
     // ==========================================================
     // 🔎 BUSCAR CIDADES (com cache + proteção inteligente)
     // ==========================================================
@@ -24,7 +26,7 @@ class LocationController extends Controller
         // 🚫 Validação mínima
         // ------------------------------------------------------
         if (empty($busca) || strlen($busca) < 3) {
-            return response()->json([]);
+            return $this->safeJsonResponse([]);
         }
 
         // Normaliza busca para chave de cache
@@ -36,7 +38,7 @@ class LocationController extends Controller
         $ipKey = 'buscar-cidades-ip:' . $request->ip();
 
         if (RateLimiter::tooManyAttempts($ipKey, 120)) {
-            return response()->json([
+            return $this->safeJsonResponse([
                 'message' => 'Muitas requisições. Aguarde um momento.'
             ], 429);
         }
@@ -51,7 +53,7 @@ class LocationController extends Controller
             $userKey = 'buscar-cidades-user:' . $request->user()->id;
 
             if (RateLimiter::tooManyAttempts($userKey, 60)) {
-                return response()->json([
+                return $this->safeJsonResponse([
                     'message' => 'Limite temporário atingido.'
                 ], 429);
             }
@@ -225,13 +227,13 @@ class LocationController extends Controller
                 'cidade_id' => $cidade->id
             ]);
 
-            return response()->json([
+            return $this->safeJsonResponse([
                 'status'  => 'sucesso',
                 'cidade'  => $cidade
             ]);
         }
 
-        return response()->json([
+        return $this->safeJsonResponse([
             'status'  => 'erro',
             'message' => 'Não foi possível salvar'
         ], 404);

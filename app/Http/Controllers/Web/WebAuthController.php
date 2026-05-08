@@ -79,10 +79,16 @@ class WebAuthController extends Controller
         $credentials = $request->only('email', 'password');
         $remember = $request->boolean('remember');
 
+        // Se for admin, desabilita o "Lembrar-me" por segurança (5 min timeout)
+        $userPre = User::where('email', $request->email)->first();
+        if ($userPre && $userPre->nivel >= 3) {
+            $remember = false;
+        }
+
         if (!Auth::attempt($credentials, $remember)) {
             return redirect()->back()
                 ->with('error', 'Credenciais inválidas.')
-                ->withInput($request->except('password'));
+                ->withInput($request->except('password', 'remember'));
         }
 
         $request->session()->regenerate();

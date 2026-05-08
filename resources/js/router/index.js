@@ -10,6 +10,12 @@ const routes = [
     meta: { requiresAuth: true, requiresStaff: true },
   },
   {
+    path: '/admin/usuarios/novo',
+    name: 'admin-user-create',
+    component: () => import('../pages/admin/UserCreate.vue'),
+    meta: { requiresAuth: true, requiresStaff: true },
+  },
+  {
     path: '/',
     name: 'home',
     component: () => import('../pages/Home.vue'),
@@ -58,6 +64,10 @@ const routes = [
     meta: { requiresAuth: true, requiresCommon: true },
   },
   {
+    path: '/admin',
+    redirect: '/admin/dashboard',
+  },
+  {
     path: '/admin/dashboard',
     name: 'admin-dashboard',
     component: () => import('../pages/admin/DashboardView.vue'),
@@ -95,8 +105,7 @@ const routes = [
   },
   {
     path: '/:pathMatch(.*)*',
-    name: 'not-found',
-    component: () => import('../pages/NotFound.vue'),
+    redirect: '/',
   },
 ];
 
@@ -145,6 +154,12 @@ router.beforeEach(async (to, from, next) => {
   // 4. Common users trying to access staff areas
   if (to.meta.requiresStaff && !isStaff) {
     next({ name: 'home' });
+    return;
+  }
+  
+  // Final fallback for protected routes
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ name: 'login' });
     return;
   }
   

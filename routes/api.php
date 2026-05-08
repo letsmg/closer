@@ -16,7 +16,8 @@ use App\Http\Controllers\Api\{
     InteractionController,
     UserController,
     LikeController,
-    BlockController
+    BlockController,
+    ReportController
 };
 
 
@@ -39,19 +40,21 @@ use App\Http\Controllers\Api\{
 Route::post('/cadastrar', [UserController::class, 'cadastrar'])->name('cadastrar.legacy');
 Route::post('/login', [JwtAuthController::class, 'login'])->name('api.login');
 
-/*
-|--------------------------------------------------------------------------
-| AUTH API (JWT)
-|--------------------------------------------------------------------------
-*/
+// Verificação de e-mail (Link clicado no e-mail) - Deve ser registrado antes de tudo para garantir o nome
+Route::get('/email/verify/{id}/{hash}', [JwtAuthController::class, 'verify'])
+    ->middleware(['signed'])
+    ->name('verification.verify');
+
+
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [JwtAuthController::class, 'register']);
+    Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [JwtAuthController::class, 'login']);
     
     Route::middleware(['auth:api'])->group(function () {
         Route::get('/me', [JwtAuthController::class, 'me'])->name('api.auth.me');
         Route::post('/logout', [JwtAuthController::class, 'logout']);
         Route::post('/refresh', [JwtAuthController::class, 'refresh']);
+        Route::post('/email/resend', [JwtAuthController::class, 'resend'])->name('verification.resend');
     });
 });
 
@@ -222,8 +225,14 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
 */
 Route::middleware(['auth:api', 'level:staff'])->group(function () {
     Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::put('/users/{user}', [UserController::class, 'update']);
     Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword']);
     Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
+    // Denúncias (Reports)
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::get('/reports/{report}', [ReportController::class, 'show']);
+    Route::put('/reports/{report}', [ReportController::class, 'update']);
 });

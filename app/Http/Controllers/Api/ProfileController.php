@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
+use App\Traits\SanitizesOutput;
 
 class ProfileController extends Controller
 {
+    use SanitizesOutput;
     /**
      * Returns logged user's profile
      */
@@ -19,7 +21,7 @@ class ProfileController extends Controller
             ->with('user.profilePhotos', 'hobbies')
             ->first();
 
-        return response()->json($profile);
+        return $this->safeJsonResponse($profile->toArray());
     }
 
     /**
@@ -34,6 +36,6 @@ class ProfileController extends Controller
             $request->validated()
         );
 
-        return response()->json($result);
+        return $this->safeJsonResponse($result);
     }
 }
