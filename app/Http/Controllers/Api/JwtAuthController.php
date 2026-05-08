@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\RefreshToken;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -128,7 +129,17 @@ class JwtAuthController extends Controller
                 'ultimo_login_em' => now(),
             ]);
 
-            return $this->respondWithToken($token, $user->load('perfil'), 'Login realizado com sucesso.');
+            // Gerar Refresh Token persistente para segurança extra
+            $refreshData = RefreshToken::generate(
+                $user, 
+                ['*'], 
+                $request->ip(), 
+                $request->userAgent()
+            );
+
+            return $this->respondWithToken($token, $user->load('perfil'), 'Login realizado com sucesso.')
+                ->withCookie(cookie('refresh_token', $refreshData['refresh_token'], 43200, null, null, true, true)); 
+                // 43200 min = 30 dias, HttpOnly, Secure
 
         } catch (JWTException $e) {
             \Log::error('Erro JWT no login: ' . $e->getMessage());
@@ -147,6 +158,11 @@ class JwtAuthController extends Controller
             // Invalida o token atual
             JWTAuth::invalidate(JWTAuth::getToken());
 
+            // Revoga Refresh Tokens se existirem
+            if ($user = Auth::user()) {
+                RefreshToken::revokeAllForUser($user->id);
+            }
+
             // Se for web, faz logout da sessão também
             if ($request->hasSession()) {
                 Auth::logout();
@@ -154,14 +170,18 @@ class JwtAuthController extends Controller
                 $request->session()->regenerateToken();
             }
 
-            return $this->respondWithSuccess('Logout realizado com sucesso.');
+            return $this->respondWithSuccess('Logout realizado com sucesso.')
+                ->withoutCookie('refresh_token');
 
         } catch (TokenExpiredException $e) {
-            return $this->respondWithError('Token expirado.', 401);
+            return $this->respondWithError('Token expirado.', 401)
+                ->withoutCookie('refresh_token');
         } catch (TokenInvalidException $e) {
-            return $this->respondWithError('Token inválido.', 401);
+            return $this->respondWithError('Token inválido.', 401)
+                ->withoutCookie('refresh_token');
         } catch (JWTException $e) {
-            return $this->respondWithError('Erro ao realizar logout.', 500);
+            return $this->respondWithError('Erro ao realizar logout.', 500)
+                ->withoutCookie('refresh_token');
         }
     }
 
@@ -173,10 +193,36 @@ class JwtAuthController extends Controller
     public function refresh()
     {
         try {
-            $token = JWTAuth::refresh();
-            $user = JWTAuth::setToken($token)->toUser();
+            // Tenta obter do cookie para maior segurança (evita localStorage)
+            $refreshToken = request()->cookie('refresh_token');
+            
+            if (!$refreshToken) {
+                return $this->respondWithError('Refresh token não encontrado.', 401);
+            }
 
-            return $this->respondWithToken($token, $user, 'Token atualizado com sucesso.');
+            $tokenModel = RefreshToken::validate($refreshToken);
+            
+            if (!$tokenModel) {
+                return $this->respondWithError('Refresh token inválido ou expirado.', 401);
+            }
+
+            // Rotaciona o refresh token (impede reuso de tokens antigos)
+            $newData = $tokenModel->rotate([], request()->ip(), request()->userAgent());
+            
+            // Gera novo Access Token (JWT)
+            $user = $tokenModel->user;
+            $newAccessToken = JWTAuth::fromUser($user);
+
+            return $this->respondWithToken($newAccessToken, $user, 'Token atualizado com sucesso.')
+                ->withCookie(cookie(
+                    'refresh_token', 
+                    $newData['refresh_token'], 
+                    43200, 
+                    null, 
+                    null, 
+                    true, 
+                    true
+                ));
 
         } catch (TokenExpiredException $e) {
             return $this->respondWithError('Token expirado. Faça login novamente.', 401);
