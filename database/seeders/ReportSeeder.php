@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Enums\UserLevel;
 use App\Models\Report;
 use App\Models\User;
 
@@ -14,14 +15,14 @@ class ReportSeeder extends Seeder
     public function run(): void
     {
         // Get some non-staff users to be reporters and reported
-        $users = User::where('nivel_acesso', '<', 3)->get();
+        $users = User::where('nivel_acesso', '<', UserLevel::ADMIN->value)->get();
 
         if ($users->count() < 8) {
             // Create some more users if needed
             User::factory(10)->create([
-                'nivel_acesso' => 1
+                'nivel_acesso' => UserLevel::FREE->value
             ]);
-            $users = User::where('nivel_acesso', '<', 3)->get();
+            $users = User::where('nivel_acesso', '<', UserLevel::ADMIN->value)->get();
         }
 
         $reasons = ['harassment', 'disrespect', 'fake_profile', 'other'];
@@ -50,7 +51,7 @@ class ReportSeeder extends Seeder
             'reason' => 'harassment',
             'description' => 'Teste de denúncia resolvida.',
             'status' => 'resolved',
-            'analyzed_by' => User::where('nivel_acesso', '>=', 3)->first()?->id,
+            'analyzed_by' => User::where('nivel_acesso', '>=', UserLevel::ADMIN->value)->first()?->id,
             'analyzed_at' => now(),
             'created_at' => now()->subDays(15)
         ]);

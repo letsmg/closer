@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserLevel;
 use App\Models\User;
 use App\Models\Profile;
 use App\Models\ProfilePreference;
@@ -19,8 +20,8 @@ class ProfileSeeder extends Seeder
      */
     public function run(): void
     {
-        // Pega todos os usuários que não são staff (nivel_acesso < 3) e que não têm perfil ainda
-        $users = User::where('nivel_acesso', '<', 3)
+        // Pega todos os usuarios que nao sao staff e que nao tem perfil ainda
+        $users = User::where('nivel_acesso', '<', UserLevel::ADMIN->value)
             ->whereDoesntHave('perfil')
             ->get();
 

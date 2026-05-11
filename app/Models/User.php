@@ -29,7 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'password',
         'uuid',              // Public ULID (obscures incremental ID)
         'ativo',
-        'nivel_acesso',      // 0 = Free | 1 = Plus | 2 = Premium
+        'nivel_acesso',      // 0=Free, 1=Moderator, 2=Plus, 3=Premium, 4=Co-Founder, 5=Elite, 10+=Staff
         'ultimo_login_em',
         'ultimo_ip',
         'daily_likes_count',
@@ -383,6 +383,14 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     public function canBeInvisible(): bool
     {
         return $this->getLevelAttribute()->canBeInvisible();
+    }
+
+    /**
+     * Verifica se pode definir filtros por nivel de customer.
+     */
+    public function canFilterByLevel(): bool
+    {
+        return $this->getLevelAttribute()->canFilterByLevel();
     }
 
     /**

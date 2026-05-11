@@ -18,8 +18,14 @@ class ProfileController extends Controller
     {
         $profile = $request->user()
             ->profile()
-            ->with('user.profilePhotos', 'hobbies')
+            ->with('user.fotos', 'preference', 'hobbies')
             ->first();
+
+        if (!$profile) {
+            return $this->safeJsonResponse([
+                'message' => 'Perfil nao encontrado.',
+            ], 404);
+        }
 
         return $this->safeJsonResponse($profile->toArray());
     }

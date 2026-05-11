@@ -29,7 +29,8 @@ class ProfilePreference extends Model
         'hide_location',
         'invisible_mode',
         'interested_hobbies',
-        'visible_levels', // Níveis que podem ver este perfil (para COFOUNDER e ELITE)
+        'discoverable_levels', // Niveis que este perfil deseja ver (para COFOUNDER e ELITE)
+        'visible_levels', // Niveis que podem ver este perfil (para COFOUNDER e ELITE)
     ];
 
     protected function casts(): array
@@ -38,6 +39,7 @@ class ProfilePreference extends Model
             'hide_location' => 'boolean',
             'invisible_mode' => 'boolean',
             'interested_hobbies' => 'array',
+            'discoverable_levels' => 'array',
             'visible_levels' => 'array',
         ];
     }

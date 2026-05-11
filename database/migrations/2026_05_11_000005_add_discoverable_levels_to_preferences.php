@@ -15,23 +15,12 @@ return new class extends Migration
                     ->after('interested_hobbies')
                     ->comment('Niveis de usuario que este perfil deseja ver (para COFOUNDER e ELITE)');
             }
-
-            if (!Schema::hasColumn('profile_preferences', 'visible_levels')) {
-                $table->json('visible_levels')
-                    ->nullable()
-                    ->after('discoverable_levels')
-                    ->comment('Niveis de usuario que podem ver este perfil (para COFOUNDER e ELITE)');
-            }
         });
     }
 
     public function down(): void
     {
         Schema::table('profile_preferences', function (Blueprint $table) {
-            if (Schema::hasColumn('profile_preferences', 'visible_levels')) {
-                $table->dropColumn('visible_levels');
-            }
-
             if (Schema::hasColumn('profile_preferences', 'discoverable_levels')) {
                 $table->dropColumn('discoverable_levels');
             }

@@ -10,6 +10,5 @@ return [
     | Clients must accept the current version to continue.
     |
     */
-    'version' => env('TERMS_VERSION', '2026-05-05'),
+    'version' => env('TERMS_VERSION', '2026-05-11'),
 ];
-

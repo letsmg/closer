@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
-use App\Models\ProfilePreference;
 use App\Models\LikeModel;
 use App\Models\UserMatch;
 use App\Models\Report;
@@ -121,16 +120,26 @@ class DiscoveryController extends Controller
         // 2. Apenas perfis com visibilidade pública
         $query->where('profiles.visibility', 'public');
 
-        // Filtro por nível (apenas COFOUNDER e ELITE podem filtrar)
+        // Filtros por nivel:
+        // - discoverable_levels: niveis que o usuario logado deseja ver
+        // - visible_levels: niveis autorizados pelo perfil alvo a ve-lo
         try {
             $userLevel = UserLevel::tryFrom((int) $user->nivel_acesso);
+            $currentLevel = (int) $user->nivel_acesso;
+
             if ($userLevel && $userLevel->canFilterByLevel() && $preference) {
-                // Aplicar filtro de níveis se o usuário tiver configurado
-                $visibleLevels = $preference->visible_levels ?? null;
-                if (!empty($visibleLevels) && is_array($visibleLevels)) {
-                    $query->whereIn('users.nivel_acesso', $visibleLevels);
+                $discoverableLevels = $preference->discoverable_levels ?? null;
+
+                if (!empty($discoverableLevels) && is_array($discoverableLevels)) {
+                    $query->whereIn('users.nivel_acesso', $discoverableLevels);
                 }
             }
+
+            $query->where(function ($q) use ($currentLevel) {
+                $q->whereNull('profile_preferences.visible_levels')
+                  ->orWhereJsonLength('profile_preferences.visible_levels', 0)
+                  ->orWhereJsonContains('profile_preferences.visible_levels', $currentLevel);
+            });
         } catch (\Exception $e) {
             // Ignora erro se a coluna não existir
         }
@@ -198,10 +207,10 @@ class DiscoveryController extends Controller
             $haversine = "(6371 * acos(cos(radians($lat)) * cos(radians(cities.latitude)) * cos(radians(cities.longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(cities.latitude)) * sin(radians(cities.longitude) - radians($lng))))";
 
             $query->join('cities', 'cities.id', '=', 'profiles.city_id')
-                ->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, {$haversine} AS distance, profile_photos.path as primary_photo_path, profile_photos.full_url as primary_photo_url")
+                ->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, {$haversine} AS distance, profile_photos.path as primary_photo_path, profile_photos.full_url as primary_photo_url")
                 ->havingRaw("distance <= ?", [$radius]);
         } else {
-            $query->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, 0 AS distance, profile_photos.path as primary_photo_path, profile_photos.full_url as primary_photo_url");
+            $query->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, 0 AS distance, profile_photos.path as primary_photo_path, profile_photos.full_url as primary_photo_url");
         }
 
         // =============================

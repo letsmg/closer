@@ -21,7 +21,7 @@ return new class extends Migration
             
             // Status e Nível
             $table->boolean('ativo')->default(true);
-            $table->integer('nivel_acesso')->default(0); // 0=Free, 1=Plus, 2=Premium, 3=Admin, 4=Operacional, 5=Support
+            $table->integer('nivel_acesso')->default(0); // 0=Free, 1=Moderator, 2=Plus, 3=Premium, 4=Co-Founder, 5=Elite, 10+=Staff
             
             // Two-Factor Authentication
             $table->text('two_factor_secret')->nullable();

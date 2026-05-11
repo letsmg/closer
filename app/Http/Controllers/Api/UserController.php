@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Profile;
+use App\Enums\UserLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use App\Traits\SanitizesOutput;
 
@@ -104,7 +106,7 @@ class UserController extends Controller
                 'min:8',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/'
             ],
-            'nivel_acesso' => 'required|integer|min:10|max:12', // Only Staff (levels 10-12)
+            'nivel_acesso' => ['required', 'integer', Rule::in(array_map(fn (UserLevel $level) => $level->value, UserLevel::getStaffLevels()))],
         ]);
 
         if ($validator->fails()) {
@@ -221,7 +223,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
-            'nivel_acesso' => 'sometimes|integer|min:0|max:12',
+            'nivel_acesso' => ['sometimes', 'integer', Rule::in(array_map(fn (UserLevel $level) => $level->value, UserLevel::getAll()))],
             'ativo' => 'sometimes|boolean',
             'profile.nickname' => 'sometimes|string|max:255',
             'profile.gender' => 'sometimes|string|max:20',

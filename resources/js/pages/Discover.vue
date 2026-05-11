@@ -76,7 +76,68 @@
     </div>
 
     <!-- Swipe Cards -->
-    <div v-else class="relative max-w-sm mx-auto mt-8 px-4" style="min-height: 580px;">
+    <div v-else class="max-w-sm mx-auto mt-8 px-4">
+      <section
+        v-if="canUseLevelFilters"
+        class="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-900">Filtros por nivel</h2>
+            <p class="text-xs text-gray-500">Disponivel para Co-Founder e Elite.</p>
+          </div>
+          <button
+            type="button"
+            @click="saveLevelPreferences"
+            :disabled="savingLevelPreferences"
+            class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {{ savingLevelPreferences ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 gap-4">
+          <fieldset>
+            <legend class="mb-2 text-xs font-medium text-gray-700">Quero ver</legend>
+            <div class="grid grid-cols-2 gap-2">
+              <label
+                v-for="level in customerLevelOptions"
+                :key="`see-${level.value}`"
+                class="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700"
+              >
+                <input
+                  v-model="levelFilters.discoverable_levels"
+                  type="checkbox"
+                  :value="level.value"
+                  class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>{{ level.label }}</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend class="mb-2 text-xs font-medium text-gray-700">Podem ver meu perfil</legend>
+            <div class="grid grid-cols-2 gap-2">
+              <label
+                v-for="level in customerLevelOptions"
+                :key="`visible-${level.value}`"
+                class="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700"
+              >
+                <input
+                  v-model="levelFilters.visible_levels"
+                  type="checkbox"
+                  :value="level.value"
+                  class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>{{ level.label }}</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+      </section>
+
+      <div class="relative" style="min-height: 580px;">
       <!-- Card atual -->
       <div
         v-for="(profile, index) in visibleCards"
@@ -110,6 +171,7 @@
             Continuar
           </button>
         </div>
+      </div>
       </div>
     </div>
 
@@ -166,12 +228,32 @@ const showMatchOverlay = ref(false);
 const matchedUserName = ref('');
 const errorMessage = ref('');
 const needsProfile = ref(false);
+const savingLevelPreferences = ref(false);
+const levelFilters = ref({
+  discoverable_levels: [],
+  visible_levels: [],
+});
+
+const customerLevelOptions = [
+  { value: 0, label: 'Free' },
+  { value: 1, label: 'Moderador' },
+  { value: 2, label: 'Plus' },
+  { value: 3, label: 'Premium' },
+  { value: 4, label: 'Co-Founder' },
+  { value: 5, label: 'Elite' },
+];
 
 const visibleCards = computed(() => {
   return profiles.value.slice(currentIndex.value, currentIndex.value + 3);
 });
 
+const canUseLevelFilters = computed(() => {
+  const level = Number(authStore.user?.nivel_acesso ?? authStore.user?.nivel ?? 0);
+  return level >= 4 && level < 10;
+});
+
 onMounted(() => {
+  loadLevelPreferences();
   loadProfiles();
 });
 
@@ -196,6 +278,48 @@ const loadProfiles = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const loadLevelPreferences = async () => {
+  if (!canUseLevelFilters.value) return;
+
+  try {
+    const response = await api.get('/perfil');
+    const preference = response.data?.preference || {};
+    levelFilters.value = {
+      discoverable_levels: normalizeLevels(preference.discoverable_levels),
+      visible_levels: normalizeLevels(preference.visible_levels),
+    };
+  } catch (err) {
+    console.error('Erro ao carregar filtros de nivel:', err);
+  }
+};
+
+const saveLevelPreferences = async () => {
+  if (!canUseLevelFilters.value) return;
+
+  savingLevelPreferences.value = true;
+  try {
+    await api.put('/perfil', {
+      preference: {
+        discoverable_levels: normalizeLevels(levelFilters.value.discoverable_levels),
+        visible_levels: normalizeLevels(levelFilters.value.visible_levels),
+      },
+    });
+    await loadProfiles();
+  } catch (err) {
+    console.error('Erro ao salvar filtros de nivel:', err);
+  } finally {
+    savingLevelPreferences.value = false;
+  }
+};
+
+const normalizeLevels = (levels) => {
+  if (!Array.isArray(levels)) return [];
+
+  return [...new Set(levels.map((level) => Number(level)))]
+    .filter((level) => customerLevelOptions.some((option) => option.value === level))
+    .sort((a, b) => a - b);
 };
 
 const handleLike = async () => {

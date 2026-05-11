@@ -101,6 +101,7 @@
             <li>False or misleading information provided by users</li>
             <li>Financial transactions or arrangements made between users</li>
             <li>Use of the service for illegal or unauthorized purposes</li>
+            <li>Offline meetings, communications, agreements, payments, gifts, or disputes arranged between users</li>
         </ul>
 
         <h3>3.3 No Liability for Illegal Acts</h3>
@@ -162,6 +163,8 @@
             <li>Attempting to gain unauthorized access to the system</li>
             <li>Using automated tools or bots without permission</li>
             <li>Sharing explicit, offensive, or inappropriate content</li>
+            <li>Soliciting minors, exploiting vulnerable persons, trafficking, coercion, blackmail, threats, or any form of abuse</li>
+            <li>Collecting, publishing, or misusing another user's personal data without authorization</li>
         </ul>
     </div>
 
@@ -187,7 +190,8 @@
         </ul>
         
         <h3>7.3 Subscription Values</h3>
-        <p>Subscription values and payment terms are displayed in-app at the time of purchase. Prices may vary by region and are subject to change with notice.</p>
+        <p>Subscription values, billing cycles, taxes, renewal rules, trial conditions, and payment terms are displayed in-app at the time of purchase. Prices may vary by region, currency, store, payment provider, taxes, promotions, and user level. The amount shown at checkout is the applicable amount for that purchase. Prices may change with notice when required by law or by the payment platform.</p>
+        <p>Paid access does not guarantee matches, conversations, dates, offline meetings, income, business opportunities, or any specific result. Features may be changed, suspended, limited, or discontinued when necessary for security, legal compliance, product operation, or abuse prevention.</p>
     </div>
 
     <div class="section">
@@ -207,16 +211,18 @@
         <div class="warning">
             <strong>Important:</strong> We may block access without prior notice in case of reports, judicial orders, or force majeure events. Users will be notified when possible, but immediate action may be taken to protect the community.
         </div>
+        <p>Moderation actions may include removing content, limiting visibility, disabling messaging, restricting paid or unpaid features, preserving evidence, suspending accounts, terminating accounts, and cooperating with authorities when legally required.</p>
     </div>
 
     <div class="section">
         <h2>9. Refund Policy</h2>
         <p>Refunds are only granted under the following conditions:</p>
         <ul>
-            <li>Refund requests must be made within 7 (seven) days of the subscription start date</li>
+            <li>Refund requests must be made within 7 (seven) days of the subscription start date or first use of the paid access, as applicable under local consumer law</li>
             <li>The request must be based on regret ("arrependimento") of the purchase</li>
             <li>After 7 days, no refunds will be granted</li>
             <li>Refunds are processed according to the payment method used</li>
+            <li>Refunds may be denied for abuse, fraud, chargeback manipulation, or violations of these Terms</li>
         </ul>
     </div>
 
@@ -228,6 +234,7 @@
             <li>Retained data will NOT be used for any purpose other than complying with legal requirements</li>
             <li>Data will be permanently deleted once legal retention periods expire</li>
             <li>Users may request information about data retention periods applicable to their jurisdiction</li>
+            <li>Reports, audit logs, security records, payment records, and legal preservation records may be retained for the minimum period necessary to comply with law, prevent abuse, resolve disputes, and cooperate with lawful requests</li>
         </ul>
     </div>
 
@@ -251,7 +258,7 @@
 
     <div class="section">
         <h2>12. Indemnification</h2>
-        <p>Users agree to indemnify, defend, and hold harmless Closer and its affiliates from:</p>
+        <p>Users agree to indemnify, defend, and hold harmless Closer, its owners, developers, employees, contractors, affiliates, and service providers from:</p>
         <ul>
             <li>Any claims arising from user content or activities</li>
             <li>Violations of these terms of service</li>
