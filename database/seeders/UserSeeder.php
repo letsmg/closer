@@ -55,9 +55,15 @@ class UserSeeder extends Seeder
     private function createRegularUsers(): void
     {
         // Usuários FREE (nível 0) - 5 usuários
-        $freeUsers = [
-            ['Free User', 'free@closer.com'],
-        ];
+$freeUsers = [
+    ['Free User', 'free@closer.com'],
+    ['Free User 2', 'free2@closer.com'],
+    ['Free User 3', 'free3@closer.com'],
+    ['Free User 4', 'free4@closer.com'],
+    ['Free User 5', 'free5@closer.com'],
+    ['Free User 6', 'free6@closer.com'],
+    ['Free User 7', 'free7@closer.com'],
+];
 
         foreach ($freeUsers as [$name, $email]) {
             User::create([
@@ -72,9 +78,15 @@ class UserSeeder extends Seeder
         }
 
         // Usuários PLUS (nível 1) - 4 usuários
-        $plusUsers = [
-            ['Plus User', 'plus@closer.com'],
-        ];
+$plusUsers = [
+    ['Plus User', 'plus@closer.com'],
+    ['Plus User 2', 'plus2@closer.com'],
+    ['Plus User 3', 'plus3@closer.com'],
+    ['Plus User 4', 'plus4@closer.com'],
+    ['Plus User 5', 'plus5@closer.com'],
+    ['Plus User 6', 'plus6@closer.com'],
+    ['Plus User 7', 'plus7@closer.com'],
+];
 
         foreach ($plusUsers as [$name, $email]) {
             User::create([
@@ -89,9 +101,15 @@ class UserSeeder extends Seeder
         }
 
         // Usuários PREMIUM (nível 2) - 4 usuários
-        $premiumUsers = [
-            ['Premium User', 'premium@closer.com'],
-        ];
+$premiumUsers = [
+    ['Premium User', 'premium@closer.com'],
+    ['Premium User 2', 'premium2@closer.com'],
+    ['Premium User 3', 'premium3@closer.com'],
+    ['Premium User 4', 'premium4@closer.com'],
+    ['Premium User 5', 'premium5@closer.com'],
+    ['Premium User 6', 'premium6@closer.com'],
+    ['Premium User 7', 'premium7@closer.com'],
+];
 
         foreach ($premiumUsers as [$name, $email]) {
             User::create([
@@ -125,22 +143,47 @@ class UserSeeder extends Seeder
                 ],
             ],
             'free_users' => [
-                'emails' => ['free@closer.com'],
+                'emails' => [
+    'free@closer.com',
+    'free2@closer.com',
+    'free3@closer.com',
+    'free4@closer.com',
+    'free5@closer.com',
+    'free6@closer.com',
+    'free7@closer.com',
+],
                 'password' => 'Mudar@123',
                 'level' => 'Free (0)',
-                'count' => 1,
+                'count' => 7,
+'count' => 7,
             ],
             'plus_users' => [
-                'emails' => ['plus@closer.com'],
+                'emails' => [
+    'plus@closer.com',
+    'plus2@closer.com',
+    'plus3@closer.com',
+    'plus4@closer.com',
+    'plus5@closer.com',
+    'plus6@closer.com',
+    'plus7@closer.com',
+],
                 'password' => 'Mudar@123',
                 'level' => 'Plus (1)',
                 'count' => 1,
             ],
             'premium_users' => [
-                'emails' => ['premium@closer.com'],
+                'emails' => [
+    'premium@closer.com',
+    'premium2@closer.com',
+    'premium3@closer.com',
+    'premium4@closer.com',
+    'premium5@closer.com',
+    'premium6@closer.com',
+    'premium7@closer.com',
+],
                 'password' => 'Mudar@123',
                 'level' => 'Premium (2)',
-                'count' => 4,
+                'count' => 7,
             ],
             'note' => 'Todas as senhas usam Argon2id (configuração padrão Laravel)',
         ];
