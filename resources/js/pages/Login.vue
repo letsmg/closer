@@ -7,16 +7,27 @@
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            v-model="form.email"
-            type="email"
-            required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            placeholder="user@example.com"
-          />
-        </div>
+<div>
+  <label class="block text-sm font-medium text-gray-700">Email</label>
+  <div class="flex flex-wrap gap-2 mb-2">
+    <button
+      v-for="email in testEmails"
+      :key="email"
+      type="button"
+      class="px-2 py-1 bg-gray-200 rounded text-xs hover:bg-indigo-200"
+      @click="form.email = email"
+    >
+      {{ email }}
+    </button>
+  </div>
+  <input
+    v-model="form.email"
+    type="email"
+    required
+    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+    placeholder="user@example.com"
+  />
+</div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Password</label>
@@ -72,6 +83,32 @@ import PasswordInput from '../components/PasswordInput.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const testEmails = [
+  'admin@1.com',
+  'operator@2.com',
+  'free@closer.com',
+  'free2@closer.com',
+  'free3@closer.com',
+  'free4@closer.com',
+  'free5@closer.com',
+  'free6@closer.com',
+  'free7@closer.com',
+  'plus@closer.com',
+  'plus2@closer.com',
+  'plus3@closer.com',
+  'plus4@closer.com',
+  'plus5@closer.com',
+  'plus6@closer.com',
+  'plus7@closer.com',
+  'premium@closer.com',
+  'premium2@closer.com',
+  'premium3@closer.com',
+  'premium4@closer.com',
+  'premium5@closer.com',
+  'premium6@closer.com',
+  'premium7@closer.com',
+];
 
 const form = reactive({
   email: 'admin@1.com', // Default test admin user
