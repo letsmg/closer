@@ -2,175 +2,86 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Hobby;
+use Illuminate\Database\Seeder;
 
 class HobbySeeder extends Seeder
 {
     public function run(): void
     {
         $hobbies = [
-            // ======================
-            // Geek
-            // ======================
-            ['name' => 'Anime', 'category' => 'Geek'],
-            ['name' => 'TV Series', 'category' => 'Geek'],
-            ['name' => 'Movies', 'category' => 'Geek'],
-            ['name' => 'Comics', 'category' => 'Geek'],
-            ['name' => 'Cosplay', 'category' => 'Geek'],
-            ['name' => 'Technology', 'category' => 'Geek'],
-
-            // ======================
-            // Science
-            // ======================
-            ['name' => 'Astronomy', 'category' => 'Science'],
-            ['name' => 'Biology', 'category' => 'Science'],
-            ['name' => 'Chemistry', 'category' => 'Science'],
-            ['name' => 'Physics', 'category' => 'Science'],
-            ['name' => 'Mathematics', 'category' => 'Science'],
-            ['name' => 'Medicine', 'category' => 'Science'],
-
-            // ======================
-            // Sports
-            // ======================
-            ['name' => 'Football', 'category' => 'Sports'],
-            ['name' => 'Basketball', 'category' => 'Sports'],
-            ['name' => 'Tennis', 'category' => 'Sports'],
-            ['name' => 'Swimming', 'category' => 'Sports'],
+            // Sports & Fitness
             ['name' => 'Running', 'category' => 'Sports'],
             ['name' => 'Cycling', 'category' => 'Sports'],
-            ['name' => 'Yoga', 'category' => 'Sports'],
-            ['name' => 'Gym', 'category' => 'Sports'],
+            ['name' => 'Swimming', 'category' => 'Sports'],
+            ['name' => 'Yoga', 'category' => 'Fitness'],
+            ['name' => 'Gym / Weightlifting', 'category' => 'Fitness'],
+            ['name' => 'Hiking', 'category' => 'Outdoor'],
+            ['name' => 'Surfing', 'category' => 'Sports'],
+            ['name' => 'Skateboarding', 'category' => 'Sports'],
+            ['name' => 'Climbing', 'category' => 'Sports'],
+            ['name' => 'Martial Arts', 'category' => 'Sports'],
+            ['name' => 'Dancing', 'category' => 'Arts'],
+            ['name' => 'Soccer', 'category' => 'Sports'],
+            ['name' => 'Volleyball', 'category' => 'Sports'],
+            ['name' => 'Basketball', 'category' => 'Sports'],
+            ['name' => 'Tennis', 'category' => 'Sports'],
 
-            // ======================
-            // Music
-            // ======================
-            ['name' => 'Rock', 'category' => 'Music'],
-            ['name' => 'Pop', 'category' => 'Music'],
-            ['name' => 'Jazz', 'category' => 'Music'],
-            ['name' => 'Classical', 'category' => 'Music'],
-            ['name' => 'Electronic', 'category' => 'Music'],
-            ['name' => 'Hip Hop', 'category' => 'Music'],
-            ['name' => 'R&B', 'category' => 'Music'],
-
-            // ======================
-            // Arts
-            // ======================
-            ['name' => 'Painting', 'category' => 'Arts'],
-            ['name' => 'Drawing', 'category' => 'Arts'],
-            ['name' => 'Sculpture', 'category' => 'Arts'],
+            // Arts & Creativity
             ['name' => 'Photography', 'category' => 'Arts'],
-            ['name' => 'Digital Art', 'category' => 'Arts'],
-            ['name' => 'Calligraphy', 'category' => 'Arts'],
+            ['name' => 'Drawing / Painting', 'category' => 'Arts'],
+            ['name' => 'Writing', 'category' => 'Arts'],
+            ['name' => 'Music', 'category' => 'Arts'],
+            ['name' => 'Singing', 'category' => 'Arts'],
+            ['name' => 'Playing an Instrument', 'category' => 'Arts'],
+            ['name' => 'Acting / Theater', 'category' => 'Arts'],
+            ['name' => 'DIY / Crafts', 'category' => 'Arts'],
 
-            // ======================
-            // Food & Cooking
-            // ======================
-            ['name' => 'Italian Cuisine', 'category' => 'Food'],
-            ['name' => 'Japanese Cuisine', 'category' => 'Food'],
-            ['name' => 'Mexican Cuisine', 'category' => 'Food'],
-            ['name' => 'Indian Cuisine', 'category' => 'Food'],
-            ['name' => 'Thai Cuisine', 'category' => 'Food'],
+            // Food & Drink
+            ['name' => 'Cooking', 'category' => 'Food'],
             ['name' => 'Baking', 'category' => 'Food'],
-            ['name' => 'Grilling', 'category' => 'Food'],
-            ['name' => 'Vegan Cooking', 'category' => 'Food'],
+            ['name' => 'Wine Tasting', 'category' => 'Food'],
+            ['name' => 'Coffee', 'category' => 'Food'],
+            ['name' => 'Vegan / Plant-based', 'category' => 'Food'],
 
-            // ======================
-            // Travel
-            // ======================
+            // Travel & Adventure
+            ['name' => 'Traveling', 'category' => 'Travel'],
+            ['name' => 'Camping', 'category' => 'Outdoor'],
+            ['name' => 'Road Trips', 'category' => 'Travel'],
             ['name' => 'Backpacking', 'category' => 'Travel'],
-            ['name' => 'Luxury Travel', 'category' => 'Travel'],
-            ['name' => 'Adventure Travel', 'category' => 'Travel'],
-            ['name' => 'Cultural Tourism', 'category' => 'Travel'],
-            ['name' => 'Beach Destinations', 'category' => 'Travel'],
-            ['name' => 'Mountain Hiking', 'category' => 'Travel'],
-            ['name' => 'City Exploration', 'category' => 'Travel'],
+            ['name' => 'Beach', 'category' => 'Travel'],
 
-            // ======================
-            // Gaming
-            // ======================
-            ['name' => 'Video Games', 'category' => 'Gaming'],
-            ['name' => 'Board Games', 'category' => 'Gaming'],
-            ['name' => 'Tabletop RPG', 'category' => 'Gaming'],
-            ['name' => 'Card Games', 'category' => 'Gaming'],
-            ['name' => 'Mobile Gaming', 'category' => 'Gaming'],
-            ['name' => 'PC Gaming', 'category' => 'Gaming'],
-            ['name' => 'Console Gaming', 'category' => 'Gaming'],
+            // Technology & Gaming
+            ['name' => 'Gaming', 'category' => 'Tech'],
+            ['name' => 'Programming', 'category' => 'Tech'],
+            ['name' => 'Tech / Gadgets', 'category' => 'Tech'],
+            ['name' => 'Anime / Manga', 'category' => 'Entertainment'],
+            ['name' => 'Movies / Cinema', 'category' => 'Entertainment'],
+            ['name' => 'Reading', 'category' => 'Entertainment'],
+            ['name' => 'Board Games', 'category' => 'Entertainment'],
 
-            // ======================
-            // Reading & Literature
-            // ======================
-            ['name' => 'Fiction', 'category' => 'Reading'],
-            ['name' => 'Non-Fiction', 'category' => 'Reading'],
-            ['name' => 'Poetry', 'category' => 'Reading'],
-            ['name' => 'Mystery', 'category' => 'Reading'],
-            ['name' => 'Romance', 'category' => 'Reading'],
-            ['name' => 'Science Fiction', 'category' => 'Reading'],
-            ['name' => 'Biography', 'category' => 'Reading'],
+            // Nature & Animals
+            ['name' => 'Pets / Animals', 'category' => 'Nature'],
+            ['name' => 'Gardening', 'category' => 'Nature'],
+            ['name' => 'Bird Watching', 'category' => 'Nature'],
+            ['name' => 'Fishing', 'category' => 'Outdoor'],
 
-            // ======================
-            // Fitness & Health
-            // ======================
-            ['name' => 'Weight Training', 'category' => 'Fitness'],
-            ['name' => 'Cardio', 'category' => 'Fitness'],
-            ['name' => 'Meditation', 'category' => 'Fitness'],
-            ['name' => 'Pilates', 'category' => 'Fitness'],
-            ['name' => 'CrossFit', 'category' => 'Fitness'],
-            ['name' => 'Dance', 'category' => 'Fitness'],
-            ['name' => 'Martial Arts', 'category' => 'Fitness'],
-
-            // ======================
-            // Fashion & Style
-            // ======================
-            ['name' => 'Street Fashion', 'category' => 'Fashion'],
-            ['name' => 'Classic Fashion', 'category' => 'Fashion'],
-            ['name' => 'Sustainable Fashion', 'category' => 'Fashion'],
-            ['name' => 'Vintage Style', 'category' => 'Fashion'],
-            ['name' => 'Minimalist Style', 'category' => 'Fashion'],
-            ['name' => 'Accessories', 'category' => 'Fashion'],
-            ['name' => 'Shoe Collection', 'category' => 'Fashion'],
-
-            // ======================
-            // Pets & Animals
-            // ======================
-            ['name' => 'Dogs', 'category' => 'Pets'],
-            ['name' => 'Cats', 'category' => 'Pets'],
-            ['name' => 'Birds', 'category' => 'Pets'],
-            ['name' => 'Fish', 'category' => 'Pets'],
-            ['name' => 'Small Animals', 'category' => 'Pets'],
-            ['name' => 'Wildlife Photography', 'category' => 'Pets'],
-            ['name' => 'Pet Training', 'category' => 'Pets'],
-
-            // ======================
-            // Technology & Innovation
-            // ======================
-            ['name' => 'Artificial Intelligence', 'category' => 'Technology'],
-            ['name' => 'Blockchain', 'category' => 'Technology'],
-            ['name' => 'Robotics', 'category' => 'Technology'],
-            ['name' => 'Virtual Reality', 'category' => 'Technology'],
-            ['name' => 'Programming', 'category' => 'Technology'],
-            ['name' => 'Gadgets', 'category' => 'Technology'],
-            ['name' => 'Smart Home', 'category' => 'Technology'],
-
-            // ======================
-            // Social & Community
-            // ======================
+            // Social & Lifestyle
             ['name' => 'Volunteering', 'category' => 'Social'],
-            ['name' => 'Activism', 'category' => 'Social'],
-            ['name' => 'Community Events', 'category' => 'Social'],
-            ['name' => 'Networking', 'category' => 'Social'],
-            ['name' => 'Public Speaking', 'category' => 'Social'],
-            ['name' => 'Mentorship', 'category' => 'Social'],
-            ['name' => 'Social Media', 'category' => 'Social'],
+            ['name' => 'Meditation', 'category' => 'Wellness'],
+            ['name' => 'Astrology', 'category' => 'Lifestyle'],
+            ['name' => 'Fashion', 'category' => 'Lifestyle'],
+            ['name' => 'Makeup / Beauty', 'category' => 'Lifestyle'],
+            ['name' => 'Karaoke', 'category' => 'Social'],
+            ['name' => 'Nightlife / Parties', 'category' => 'Social'],
+            ['name' => 'Podcasts', 'category' => 'Entertainment'],
         ];
 
         foreach ($hobbies as $hobby) {
-            Hobby::updateOrCreate(
-                ['name' => $hobby['name'], 'category' => $hobby['category']],
-                $hobby
+            Hobby::firstOrCreate(
+                ['name' => $hobby['name']],
+                ['category' => $hobby['category'], 'active' => true]
             );
         }
-
-        $this->command->info('Hobbies created successfully!');
     }
 }

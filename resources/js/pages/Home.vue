@@ -86,7 +86,7 @@
                         Nível
                       </dt>
                       <dd class="text-sm text-gray-900">
-                        {{ authStore.user?.nivel === 3 ? 'Admin' : 'Usuário' }}
+                        {{ getLevelName(authStore.user?.nivel_acesso ?? authStore.user?.nivel) }}
                       </dd>
                     </dl>
                   </div>
@@ -107,6 +107,21 @@ import NavigationMenu from '../components/NavigationMenu.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const getLevelName = (level) => {
+  const levels = {
+    0: 'Free',
+    1: 'Moderador',
+    2: 'Plus',
+    3: 'Premium',
+    4: 'Co-Founder',
+    5: 'Elite',
+    10: 'Administrador',
+    11: 'Operacional',
+    12: 'Suporte'
+  };
+  return levels[level] || 'Usuário';
+};
 
 const logout = async () => {
   await authStore.logout();

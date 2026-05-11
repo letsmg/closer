@@ -25,8 +25,22 @@ class ProfilePreference extends Model
         'min_age',
         'max_age',
         'visibility',
-        'allow_global_search'
+        'allow_global_search',
+        'hide_location',
+        'invisible_mode',
+        'interested_hobbies',
+        'visible_levels', // Níveis que podem ver este perfil (para COFOUNDER e ELITE)
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'hide_location' => 'boolean',
+            'invisible_mode' => 'boolean',
+            'interested_hobbies' => 'array',
+            'visible_levels' => 'array',
+        ];
+    }
 
     public function profile()
     {

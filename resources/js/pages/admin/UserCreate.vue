@@ -52,9 +52,9 @@
                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                 required
               >
-                <option value="3">Administrador</option>
-                <option value="4">Operacional</option>
-                <option value="5">Suporte</option>
+                <option value="10">Administrador</option>
+                <option value="11">Operacional</option>
+                <option value="12">Suporte</option>
               </select>
               <p class="mt-1 text-xs text-gray-500 italic">
                 Apenas níveis administrativos podem ser criados por aqui.
@@ -110,7 +110,7 @@ const form = ref({
   name: '',
   email: '',
   password: '',
-  nivel_acesso: 3, // Padrão Admin
+  nivel_acesso: 10, // Padrão Admin
 });
 
 const { fillStaffForm, clearForm } = useFormTester(form.value);

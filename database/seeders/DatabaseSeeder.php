@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             HobbySeeder::class,
             UserSeeder::class,  // Staff users (admin, operator, etc.)
             ReportSeeder::class,
+            ProfileSeeder::class, // Profiles + Preferences + Hobbies for regular users
         ]);
     }
 }

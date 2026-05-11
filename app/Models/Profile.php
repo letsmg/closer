@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use App\Traits\HasUlid;
+use App\Traits\HasSanitization;
 
 class Profile extends Model
 {
-    use HasFactory, HasUlid;
+    use HasFactory, HasUlid, HasSanitization;
     
     protected $table = 'profiles';
     
@@ -19,7 +20,8 @@ class Profile extends Model
         'drinker', 'marital_status', 'country_id', 'state_id', 'city_id',
         'visibility', 'latitude', 'longitude', 'uuid',
         'assinatura_id', 'reputacao', 'premium_expira_em', 
-        'ultima_interacao_at', 'ultima_conversa_at'
+        'ultima_interacao_at', 'ultima_conversa_at',
+        'is_verified', 'verified_at', 'contact_methods'
     ];
 
     protected function casts(): array
@@ -29,6 +31,9 @@ class Profile extends Model
             'premium_expira_em' => 'datetime',
             'ultima_interacao_at' => 'datetime',
             'ultima_conversa_at' => 'datetime',
+            'is_verified' => 'boolean',
+            'contact_methods' => 'array',
+            'verified_at' => 'datetime',
         ];
     }
 
@@ -123,6 +128,11 @@ class Profile extends Model
         return $this->hasMany(SecondChance::class, 'profile_id');
     }
 
+    public function blockedRegions()
+    {
+        return $this->hasMany(BlockedRegion::class, 'profile_id');
+    }
+
     public function blockedEmails()
     {
         return $this->hasMany(BlockedEmail::class, 'user_id');
@@ -187,6 +197,26 @@ class Profile extends Model
     public function isBlocked()
     {
         return $this->visibility === 'hidden';
+    }
+
+    /**
+     * Check if profile is verified
+     */
+    public function isVerified(): bool
+    {
+        return $this->is_verified === true;
+    }
+
+    /**
+     * Get verified badge HTML (safe output)
+     */
+    public function getVerifiedBadgeAttribute(): ?string
+    {
+        if (!$this->isVerified()) {
+            return null;
+        }
+        
+        return '<span class="verified-badge" title="Verified Profile">✓</span>';
     }
 
     // ---------------------------------------------------------

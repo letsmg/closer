@@ -120,7 +120,7 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span 
                       :class="[
-                        user.nivel_acesso >= 3 ? 'bg-wine-100 text-wine-800' : 'bg-primary-100 text-primary-800'
+                        user.nivel_acesso >= 10 ? 'bg-wine-100 text-wine-800' : 'bg-primary-100 text-primary-800'
                       ]"
                       class="px-2.5 py-0.5 rounded-full text-xs font-medium"
                     >
@@ -295,11 +295,14 @@ const nextPage = () => {
 const getLevelName = (level) => {
   const levels = {
     0: 'Free',
-    1: 'Plus',
-    2: 'Premium',
-    3: 'Admin',
-    4: 'Operacional',
-    5: 'Suporte'
+    1: 'Moderador',
+    2: 'Plus',
+    3: 'Premium',
+    4: 'Co-Founder',
+    5: 'Elite',
+    10: 'Administrador',
+    11: 'Operacional',
+    12: 'Suporte'
   };
   return levels[level] || 'Usuário';
 };

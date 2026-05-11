@@ -17,7 +17,8 @@ use App\Http\Controllers\Api\{
     UserController,
     LikeController,
     BlockController,
-    ReportController
+    ReportController,
+    DiscoveryController
 };
 
 
@@ -138,6 +139,16 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
     */
 
     Route::get('/feed', [FeedController::class, 'buscarPerfis']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Discovery (Swipe Tinder-like)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/discover', [DiscoveryController::class, 'discover']);
+    Route::post('/discover/{profile}/like', [DiscoveryController::class, 'like'])->middleware('limits:like');
+    Route::post('/discover/{profile}/dislike', [DiscoveryController::class, 'dislike']);
 
     /*
     |--------------------------------------------------------------------------

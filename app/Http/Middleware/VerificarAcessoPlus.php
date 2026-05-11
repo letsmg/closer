@@ -17,7 +17,7 @@ class VerificarAcessoPlus
     {
         //esse middleware é para verificar se o usuário tem acesso ao conteúdo Plus, ou seja, se ele é premium ou tem nível de acesso 1 ou superior
         $user = auth()->user();
-        if (!$user || $user->nivel_acesso < 1) {
+        if (!$user || !$user->hasPlusAccess()) {
             abort(403, 'Acesso negado.');
         }
         

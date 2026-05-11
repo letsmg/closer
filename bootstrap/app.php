@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'scope' => \App\Http\Middleware\OAuthScope::class,
             'level' => \App\Http\Middleware\CheckUserLevel::class,
             'terms.accepted' => TermsAcceptanceMiddleware::class,
+            'limits' => \App\Http\Middleware\CheckDailyLimits::class,
         ]);
 
     })

@@ -16,15 +16,15 @@ export const useAuthStore = defineStore('auth', () => {
   const userUuid = computed(() => user.value?.uuid);
   const isAdminLevel = computed(() => {
     const level = user.value?.nivel_acesso ?? user.value?.nivel;
-    return level !== undefined && level >= 3;
+    return level !== undefined && level >= 10;
   });
   const isStaffLevel = computed(() => {
     const level = user.value?.nivel_acesso ?? user.value?.nivel;
-    return level !== undefined && level >= 3;
+    return level !== undefined && level >= 10;
   });
   const isRegularUser = computed(() => {
     const level = user.value?.nivel_acesso ?? user.value?.nivel;
-    return level !== undefined && level < 3;
+    return level !== undefined && level < 10;
   });
 
   // Actions

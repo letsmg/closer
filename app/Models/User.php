@@ -32,6 +32,10 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'nivel_acesso',      // 0 = Free | 1 = Plus | 2 = Premium
         'ultimo_login_em',
         'ultimo_ip',
+        'daily_likes_count',
+        'daily_likes_date',
+        'daily_messages_count',
+        'daily_messages_date',
     ];
 
     /**
@@ -77,6 +81,12 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 
     // User has one profile
     public function perfil()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+    // Alias: perfil() = profile() for English-friendly code
+    public function profile()
     {
         return $this->hasOne(Profile::class);
     }
@@ -268,7 +278,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
      */
     public function isAdminLevel(): bool
     {
-        return $this->nivel_acesso >= 3;
+        return $this->nivel_acesso >= UserLevel::ADMIN->value;
     }
 
     /**
@@ -344,6 +354,38 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     }
 
     /**
+     * Verifica se pode enviar mensagens para perfis sem match ativo
+     */
+    public function canSendMessagesWithoutMatch(): bool
+    {
+        return $this->getLevelAttribute()->canSendMessagesWithoutMatch();
+    }
+
+    /**
+     * Verifica se pode bloquear regiões
+     */
+    public function canBlockRegion(): bool
+    {
+        return $this->getLevelAttribute()->canBlockRegion();
+    }
+
+    /**
+     * Verifica se pode esconder a localização
+     */
+    public function canHideLocation(): bool
+    {
+        return $this->getLevelAttribute()->canHideLocation();
+    }
+
+    /**
+     * Verifica se pode ficar invisível para outros usuários
+     */
+    public function canBeInvisible(): bool
+    {
+        return $this->getLevelAttribute()->canBeInvisible();
+    }
+
+    /**
      * Scope para filtrar por nível específico
      */
     public function scopeByLevel($query, UserLevel $level)
@@ -359,6 +401,8 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         return $query->whereIn('nivel_acesso', [
             UserLevel::PLUS->value,
             UserLevel::PREMIUM->value,
+            UserLevel::COFOUNDER->value,
+            UserLevel::ELITE->value,
         ]);
     }
 
@@ -370,6 +414,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         return $query->whereIn('nivel_acesso', [
             UserLevel::ADMIN->value,
             UserLevel::OPERATIONAL->value,
+            UserLevel::SUPPORT->value,
         ]);
     }
 

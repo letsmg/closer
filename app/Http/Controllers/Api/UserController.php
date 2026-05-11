@@ -104,7 +104,7 @@ class UserController extends Controller
                 'min:8',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]).{8,}$/'
             ],
-            'nivel_acesso' => 'required|integer|min:3|max:5', // Only Staff
+            'nivel_acesso' => 'required|integer|min:10|max:12', // Only Staff (levels 10-12)
         ]);
 
         if ($validator->fails()) {
@@ -175,10 +175,10 @@ class UserController extends Controller
                     });
                 })
                 ->when($request->filter === 'staff', function ($query) {
-                    $query->where('nivel_acesso', '>=', 3);
+                    $query->where('nivel_acesso', '>=', 10);
                 })
                 ->when($request->filter === 'regular', function ($query) {
-                    $query->where('nivel_acesso', '<', 3);
+                    $query->where('nivel_acesso', '<', 10);
                 })
                 ->when($request->filter === 'reported', function ($query) {
                     $query->has('reportsReceived');
@@ -221,7 +221,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
-            'nivel_acesso' => 'sometimes|integer|min:0|max:5',
+            'nivel_acesso' => 'sometimes|integer|min:0|max:12',
             'ativo' => 'sometimes|boolean',
             'profile.nickname' => 'sometimes|string|max:255',
             'profile.gender' => 'sometimes|string|max:20',

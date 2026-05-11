@@ -18,7 +18,13 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => import('../pages/Home.vue'),
+    component: () => import('../pages/Discover.vue'),
+    meta: { requiresAuth: true, requiresCommon: true },
+  },
+  {
+    path: '/discover',
+    name: 'discover',
+    component: () => import('../pages/Discover.vue'),
     meta: { requiresAuth: true, requiresCommon: true },
   },
   {

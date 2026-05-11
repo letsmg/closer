@@ -10,12 +10,22 @@ namespace App\Enums;
  */
 enum UserLevel: int
 {
-    case FREE = 0;          // Usuário padrão/gratuito
-    case PLUS = 1;          // Usuário Plus (pago básico)
-    case PREMIUM = 2;       // Usuário Premium (pago avançado)
-    case ADMIN = 3;         // Administrador do sistema
-    case OPERATIONAL = 4;   // Operacional (abaixo do admin)
-    case SUPPORT = 5;       // Suporte ao cliente
+    // ──────────────────────────────────────────────
+    // NÍVEIS DE CONSUMIDOR (Customer)
+    // ──────────────────────────────────────────────
+    case FREE = 0;          // Level 0: Usuário padrão/gratuito
+    case MODERATOR = 1;     // Level 1: Moderador (pode bloquear customers abaixo de level 4)
+    case PLUS = 2;          // Level 2: Plus (pago básico)
+    case PREMIUM = 3;       // Level 3: Premium (pago avançado)
+    case COFOUNDER = 4;     // Level 4: Co-Founder (pode enviar solicitações diretas, filtrar níveis)
+    case ELITE = 5;         // Level 5: Elite (acesso máximo entre customers, filtrar níveis)
+
+    // ──────────────────────────────────────────────
+    // NÍVEIS DE STAFF
+    // ──────────────────────────────────────────────
+    case ADMIN = 10;         // Level 10: Administrador do sistema
+    case OPERATIONAL = 11;   // Level 11: Operacional (abaixo do admin)
+    case SUPPORT = 12;       // Level 12: Suporte ao cliente
 
     /**
      * Retorna o nome amigável do nível
@@ -24,8 +34,11 @@ enum UserLevel: int
     {
         return match($this) {
             self::FREE => 'Free',
+            self::MODERATOR => 'Moderador',
             self::PLUS => 'Plus',
             self::PREMIUM => 'Premium',
+            self::COFOUNDER => 'Co-Founder',
+            self::ELITE => 'Elite',
             self::ADMIN => 'Administrador',
             self::OPERATIONAL => 'Operacional',
             self::SUPPORT => 'Suporte',
@@ -39,8 +52,11 @@ enum UserLevel: int
     {
         return match($this) {
             self::FREE => 'Usuário gratuito com acesso básico',
+            self::MODERATOR => 'Usuário moderador que pode bloquear acesso de outros customers',
             self::PLUS => 'Usuário Plus com recursos adicionais',
-            self::PREMIUM => 'Usuário Premium com todos os recursos',
+            self::PREMIUM => 'Usuário Premium com recursos avançados',
+            self::COFOUNDER => 'Co-Founder com acesso a solicitações diretas',
+            self::ELITE => 'Elite com acesso máximo entre os customers',
             self::ADMIN => 'Administrador com acesso total ao sistema',
             self::OPERATIONAL => 'Operacional com acesso limitado à administração',
             self::SUPPORT => 'Suporte ao cliente com acesso a ferramentas de atendimento',
@@ -54,8 +70,11 @@ enum UserLevel: int
     {
         return match($this) {
             self::FREE => 'gray',
+            self::MODERATOR => 'teal',
             self::PLUS => 'blue',
             self::PREMIUM => 'gold',
+            self::COFOUNDER => 'purple',
+            self::ELITE => 'black',
             self::ADMIN => 'red',
             self::OPERATIONAL => 'orange',
             self::SUPPORT => 'green',
@@ -67,7 +86,7 @@ enum UserLevel: int
      */
     public function hasPremiumAccess(): bool
     {
-        return $this->value >= self::PREMIUM->value;
+        return $this->value >= self::PREMIUM->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -75,7 +94,7 @@ enum UserLevel: int
      */
     public function hasPlusAccess(): bool
     {
-        return $this->value >= self::PLUS->value;
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -99,7 +118,6 @@ enum UserLevel: int
      */
     public function canManageUsers(): bool
     {
-        // Apenas o nível ADMIN (3) pode gerenciar usuários
         return $this === self::ADMIN;
     }
 
@@ -108,7 +126,6 @@ enum UserLevel: int
      */
     public function canViewAnalytics(): bool
     {
-        // Todos os níveis de staff (3, 4, 5) podem ver analytics
         return $this->isStaff();
     }
 
@@ -117,7 +134,6 @@ enum UserLevel: int
      */
     public function canModerateContent(): bool
     {
-        // Todos os níveis de staff (3, 4, 5) podem moderar
         return $this->isStaff();
     }
 
@@ -143,9 +159,12 @@ enum UserLevel: int
     public function getDailyMatchesLimit(): int
     {
         return match($this) {
-            self::FREE => 10,
-            self::PLUS => 50,
-            self::PREMIUM => PHP_INT_MAX, // Ilimitado
+            self::FREE => 70,
+            self::MODERATOR => 100,
+            self::PLUS => PHP_INT_MAX,
+            self::PREMIUM => PHP_INT_MAX,
+            self::COFOUNDER => PHP_INT_MAX,
+            self::ELITE => PHP_INT_MAX,
             self::ADMIN => PHP_INT_MAX,
             self::OPERATIONAL => PHP_INT_MAX,
             self::SUPPORT => PHP_INT_MAX,
@@ -153,18 +172,53 @@ enum UserLevel: int
     }
 
     /**
-     * Retorna o limite de mensagens diárias
+     * Retorna o limite de mensagens diárias para perfis sem match
      */
     public function getDailyMessagesLimit(): int
     {
         return match($this) {
-            self::FREE => 20,
-            self::PLUS => 100,
-            self::PREMIUM => PHP_INT_MAX,
+            self::FREE => 0,
+            self::MODERATOR => 5,
+            self::PLUS => 10,
+            self::PREMIUM => 50,
+            self::COFOUNDER => 100,
+            self::ELITE => PHP_INT_MAX,
             self::ADMIN => PHP_INT_MAX,
             self::OPERATIONAL => PHP_INT_MAX,
             self::SUPPORT => PHP_INT_MAX,
         };
+    }
+
+    /**
+     * Verifica se pode enviar mensagens para perfis sem match ativo
+     */
+    public function canSendMessagesWithoutMatch(): bool
+    {
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
+    }
+
+    /**
+     * Verifica se pode bloquear regiões
+     */
+    public function canBlockRegion(): bool
+    {
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
+    }
+
+    /**
+     * Verifica se pode esconder a localização
+     */
+    public function canHideLocation(): bool
+    {
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
+    }
+
+    /**
+     * Verifica se pode ficar invisível para outros usuários
+     */
+    public function canBeInvisible(): bool
+    {
+        return $this->value >= self::PREMIUM->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -172,7 +226,7 @@ enum UserLevel: int
      */
     public function canUseShorts(): bool
     {
-        return $this->value >= self::PLUS->value;
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -180,7 +234,7 @@ enum UserLevel: int
      */
     public function canViewLikes(): bool
     {
-        return $this->value >= self::PLUS->value;
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -188,7 +242,7 @@ enum UserLevel: int
      */
     public function canUseAdvancedFilters(): bool
     {
-        return $this->value >= self::PLUS->value;
+        return $this->value >= self::ELITE->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -196,7 +250,31 @@ enum UserLevel: int
      */
     public function canHaveVerifiedProfile(): bool
     {
-        return $this->value >= self::PLUS->value;
+        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
+    }
+
+    /**
+     * Retorna se pode definir quais níveis visualizam seu perfil (apenas ELITE e COFOUNDER)
+     */
+    public function canFilterByLevel(): bool
+    {
+        return $this->value >= self::COFOUNDER->value && $this->value < self::ADMIN->value;
+    }
+
+    /**
+     * Retorna se pode bloquear outros customers (MODERATOR pode bloquear abaixo de COFOUNDER)
+     */
+    public function canBlockCustomers(): bool
+    {
+        return $this->value >= self::MODERATOR->value && $this->value < self::ADMIN->value;
+    }
+
+    /**
+     * Retorna se pode enviar solicitações diretas (COFOUNDER e ELITE)
+     */
+    public function canSendDirectRequests(): bool
+    {
+        return $this->value >= self::COFOUNDER->value && $this->value < self::ADMIN->value;
     }
 
     /**
@@ -206,8 +284,11 @@ enum UserLevel: int
     {
         return [
             self::FREE,
+            self::MODERATOR,
             self::PLUS,
             self::PREMIUM,
+            self::COFOUNDER,
+            self::ELITE,
             self::ADMIN,
             self::OPERATIONAL,
             self::SUPPORT,
@@ -215,13 +296,15 @@ enum UserLevel: int
     }
 
     /**
-     * Retorna apenas os níveis pagos
+     * Retorna apenas os níveis pagos (customer)
      */
     public static function getPaidLevels(): array
     {
         return [
             self::PLUS,
             self::PREMIUM,
+            self::COFOUNDER,
+            self::ELITE,
         ];
     }
 
@@ -252,8 +335,11 @@ enum UserLevel: int
     {
         return [
             self::FREE,
+            self::MODERATOR,
             self::PLUS,
             self::PREMIUM,
+            self::COFOUNDER,
+            self::ELITE,
         ];
     }
 
@@ -264,8 +350,13 @@ enum UserLevel: int
     {
         return match(strtoupper($level)) {
             'FREE' => self::FREE,
+            'MODERATOR' => self::MODERATOR,
+            'MODERADOR' => self::MODERATOR,
             'PLUS' => self::PLUS,
             'PREMIUM' => self::PREMIUM,
+            'COFOUNDER' => self::COFOUNDER,
+            'CO-FOUNDER' => self::COFOUNDER,
+            'ELITE' => self::ELITE,
             'ADMIN' => self::ADMIN,
             'ADMINISTRADOR' => self::ADMIN,
             'OPERATIONAL' => self::OPERATIONAL,

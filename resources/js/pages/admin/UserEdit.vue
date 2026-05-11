@@ -37,12 +37,19 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nível de Acesso</label>
                 <select v-model="form.nivel_acesso" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 outline-none transition-all">
-                  <option value="0">Free</option>
-                  <option value="1">Plus</option>
-                  <option value="2">Premium</option>
-                  <option value="3">Admin</option>
-                  <option value="4">Operacional</option>
-                  <option value="5">Suporte</option>
+                  <optgroup label="Consumidores">
+                    <option value="0">Free</option>
+                    <option value="1">Moderador</option>
+                    <option value="2">Plus</option>
+                    <option value="3">Premium</option>
+                    <option value="4">Co-Founder</option>
+                    <option value="5">Elite</option>
+                  </optgroup>
+                  <optgroup label="Staff">
+                    <option value="10">Administrador</option>
+                    <option value="11">Operacional</option>
+                    <option value="12">Suporte</option>
+                  </optgroup>
                 </select>
               </div>
               <div>
@@ -147,7 +154,7 @@ const { fillConsumerForm, clearForm } = useFormTester(form.value);
 
 const isConsumer = computed(() => {
   const level = parseInt(form.value.nivel_acesso);
-  return level < 3; // Níveis 0, 1, 2 são consumidores
+  return level < 10; // Níveis abaixo de 10 são consumidores
 });
 
 const fetchUser = async () => {

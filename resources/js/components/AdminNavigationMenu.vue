@@ -2,8 +2,14 @@
   <nav class="bg-white shadow-lg border-b border-primary-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
-        <div class="flex items-center">
-          <h1 class="text-xl font-bold text-primary-600">Closer Admin</h1>
+        <div class="flex items-center gap-2">
+          <img 
+            src="/storage/logo.png" 
+            alt="Closer" 
+            class="h-8 w-auto"
+            onerror="this.style.display='none'"
+          />
+          <h1 class="text-xl font-bold text-primary-600">Admin</h1>
         </div>
 
         <!-- Desktop Menu -->

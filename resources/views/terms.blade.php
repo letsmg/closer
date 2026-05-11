@@ -103,7 +103,16 @@
             <li>Use of the service for illegal or unauthorized purposes</li>
         </ul>
 
-        <h3>3.3 Social Media and External Platforms</h3>
+        <h3>3.3 No Liability for Illegal Acts</h3>
+        <p><strong>Closer is not responsible for any illegal acts that users may commit.</strong> We will remove any inappropriate content or content that may violate the law or other users in any way as soon as we become aware of it, within a reasonable timeframe according to our report workflow and the time of occurrence, following a queue from oldest to newest report. Only after analysis can we determine the severity of each activity in order to maintain an active and safe community.</p>
+        <p>Users who violate laws or engage in illegal activities through our platform will be:</p>
+        <ul>
+            <li>Subject to immediate account suspension or termination</li>
+            <li>Reported to relevant authorities when required by law</li>
+            <li>Banned from future use of the service</li>
+        </ul>
+
+        <h3>3.4 Social Media and External Platforms</h3>
         <p>Closer is not responsible for user activities on social media platforms, messaging apps, or external websites that may be connected to or referenced from our service. Users engaging in external communications do so at their own risk.</p>
     </div>
 
@@ -157,23 +166,77 @@
     </div>
 
     <div class="section">
-        <h2>7. Account Termination</h2>
-        <p>Closer reserves the right to terminate or suspend user accounts for:</p>
+        <h2>7. User Levels and Permissions</h2>
+        <p>Closer offers different user levels with specific permissions and features:</p>
+        
+        <h3>7.1 Customer Levels</h3>
+        <ul>
+            <li><strong>Level 0 - Free:</strong> Basic access with limited daily matches (70) and no messaging without match</li>
+            <li><strong>Level 1 - Moderator:</strong> Can block access of other customers below level 4, 100 daily matches, 5 messages without match</li>
+            <li><strong>Level 2 - Plus:</strong> Paid basic access with unlimited matches, 10 messages without match, region blocking, location hiding, shorts access, view likes</li>
+            <li><strong>Level 3 - Premium:</strong> Paid advanced access with 50 messages without match, invisible mode, advanced filters</li>
+            <li><strong>Level 4 - Co-Founder:</strong> Can send direct requests, 100 messages without match, can filter which levels view their profile and which they can see</li>
+            <li><strong>Level 5 - Elite:</strong> Maximum customer access with unlimited messages, can filter which levels view their profile and which they can see</li>
+        </ul>
+        
+        <h3>7.2 Staff Levels</h3>
+        <ul>
+            <li><strong>Level 10 - Admin:</strong> Full system access and user management</li>
+            <li><strong>Level 11 - Operational:</strong> Limited administrative access</li>
+            <li><strong>Level 12 - Support:</strong> Customer support tools access</li>
+        </ul>
+        
+        <h3>7.3 Subscription Values</h3>
+        <p>Subscription values and payment terms are displayed in-app at the time of purchase. Prices may vary by region and are subject to change with notice.</p>
+    </div>
+
+    <div class="section">
+        <h2>8. Account Suspension and Termination</h2>
+        <p>Closer reserves the right to terminate or suspend user accounts without prior notice in cases of:</p>
         <ul>
             <li>Violation of these terms of service</li>
             <li>Suspicious or fraudulent activity</li>
             <li>Inactivity for extended periods (12+ months)</li>
             <li>Requests from law enforcement or regulatory authorities</li>
             <li>Use of VPN or location masking from unauthorized regions</li>
+            <li>User reports or complaints</li>
+            <li>Judicial orders or legal requirements</li>
+            <li>Force majeure events</li>
+        </ul>
+        
+        <div class="warning">
+            <strong>Important:</strong> We may block access without prior notice in case of reports, judicial orders, or force majeure events. Users will be notified when possible, but immediate action may be taken to protect the community.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>9. Refund Policy</h2>
+        <p>Refunds are only granted under the following conditions:</p>
+        <ul>
+            <li>Refund requests must be made within 7 (seven) days of the subscription start date</li>
+            <li>The request must be based on regret ("arrependimento") of the purchase</li>
+            <li>After 7 days, no refunds will be granted</li>
+            <li>Refunds are processed according to the payment method used</li>
         </ul>
     </div>
 
     <div class="section">
-        <h2>8. Limitation of Liability</h2>
-        <h3>8.1 Service Availability</h3>
+        <h2>10. Data Retention</h2>
+        <p>After account deletion:</p>
+        <ul>
+            <li>User data may be retained on our servers as required by the laws of the user's country of origin</li>
+            <li>Retained data will NOT be used for any purpose other than complying with legal requirements</li>
+            <li>Data will be permanently deleted once legal retention periods expire</li>
+            <li>Users may request information about data retention periods applicable to their jurisdiction</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>11. Limitation of Liability</h2>
+        <h3>11.1 Service Availability</h3>
         <p>Closer is provided "as is" and "as available" without warranties of any kind. We do not guarantee uninterrupted or error-free service.</p>
 
-        <h3>8.2 Damages</h3>
+        <h3>11.2 Damages</h3>
         <p>To the maximum extent permitted by law, Closer shall not be liable for:</p>
         <ul>
             <li>Indirect, incidental, or consequential damages</li>
@@ -182,12 +245,12 @@
             <li>Emotional distress or reputational damage</li>
         </ul>
 
-        <h3>8.3 Maximum Liability</h3>
+        <h3>11.3 Maximum Liability</h3>
         <p>Our total liability shall not exceed the amount paid by the user in the 12 months preceding the claim.</p>
     </div>
 
     <div class="section">
-        <h2>9. Indemnification</h2>
+        <h2>12. Indemnification</h2>
         <p>Users agree to indemnify, defend, and hold harmless Closer and its affiliates from:</p>
         <ul>
             <li>Any claims arising from user content or activities</li>
@@ -198,8 +261,8 @@
     </div>
 
     <div class="section">
-        <h2>10. Compliance and Regulatory</h2>
-        <h3>10.1 Anti-Money Laundering (AML)</h3>
+        <h2>13. Compliance and Regulatory</h2>
+        <h3>13.1 Anti-Money Laundering (AML)</h3>
         <p>Closer complies with AML regulations and may:</p>
         <ul>
             <li>Request identity verification documents</li>
@@ -208,7 +271,7 @@
             <li>Freeze accounts under investigation</li>
         </ul>
 
-        <h3>10.2 Know Your Customer (KYC)</h3>
+        <h3>13.2 Know Your Customer (KYC)</h3>
         <p>Users may be required to complete KYC verification, including:</p>
         <ul>
             <li>Government-issued ID verification</li>
@@ -219,7 +282,7 @@
     </div>
 
     <div class="section">
-        <h2>11. Updates and Modifications</h2>
+        <h2>14. Updates and Modifications</h2>
         <p>
             Closer may update these Terms at any time, with or without prior notice. When required by law or by our
             internal compliance policy, we may request a new acceptance in-app and/or by email before you continue
@@ -228,7 +291,7 @@
     </div>
 
     <div class="section">
-        <h2>12. Contact Information</h2>
+        <h2>15. Contact Information</h2>
         <p>For questions about these terms or to report violations:</p>
         <ul>
             <li><strong>Email:</strong> legal@closer.com</li>
