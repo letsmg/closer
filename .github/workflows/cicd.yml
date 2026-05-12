@@ -9,17 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4 # Baixa o código do seu repositório para o ambiente do GitHub Actions
+        uses: actions/checkout@v4
 
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4' # Atualizado para 8.4 para compatibilidade com as dependências do Symfony 8
+          php-version: '8.4'
           extensions: mbstring, bcmath, gd, zip, pgsql, pdo_sqlite
           coverage: none
 
       - name: 📦 Install Composer
-        run: composer install --no-dev --optimize-autoloader --no-interaction # Dependências de produção apenas
+        run: composer install --no-dev --optimize-autoloader --no-interaction
 
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
@@ -30,7 +30,7 @@ jobs:
       - name: 🔨 Build Assets (Vite/TS)
         run: |
           npm install
-          npm run build # Gera public/build. Essencial para evitar o erro "u is null" no Vue
+          npm run build # Essencial para evitar erros de JS/Vue no navegador
 
       - name: 🤐 Criar Pacote de Deploy
         run: zip -r deploy.zip . -x ".git/*" "node_modules/*" ".github/*" "tests/*" ".env*" "storage/*"
@@ -39,16 +39,15 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }} # Evita ataques Man-in-the-Middle
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
       - name: 🚀 Deploy Atômico
         run: |
           PROJECT_NAME="closer"
-          # Sincroniza o pacote zipado para a pasta temporária do servidor
           scp deploy.zip ubuntu@${{ secrets.SERVER_IP }}:/tmp/${PROJECT_NAME}-deploy.zip
 
           ssh ubuntu@${{ secrets.SERVER_IP }} << 'EOF'
-            set -e # Aborta o script se houver qualquer erro em qualquer linha abaixo
+            set -e # Aborta o script em caso de erro
 
             # CONFIGURAÇÃO DE CAMINHOS
             PROJECT="closer"
@@ -58,9 +57,9 @@ jobs:
             RELEASES_PATH="${BASE_PATH}/releases"
             NEW_RELEASE="${RELEASES_PATH}/$(date +%Y%m%d%H%M%S)"
             
-            # 1. GARANTIR ESTRUTURA PERSISTENTE
-            # Criamos pastas em 'shared' para arquivos que NÃO mudam entre deploys
-            sudo mkdir -p ${SHARED_PATH}/storage/app/public
+            # 1. GARANTIR ESTRUTURA PERSISTENTE (FOTOS E STORAGE)
+            # Criamos a pasta 'fotos' no shared para as imagens não sumirem no deploy
+            sudo mkdir -p ${SHARED_PATH}/storage/app/public/fotos
             sudo mkdir -p ${SHARED_PATH}/storage/framework/{cache,sessions,views}
             sudo mkdir -p ${SHARED_PATH}/storage/logs
             
@@ -68,45 +67,36 @@ jobs:
             sudo mkdir -p ${NEW_RELEASE}
             sudo unzip -o /tmp/${PROJECT}-deploy.zip -d ${NEW_RELEASE}
             
-            # 3. CONECTAR ARQUIVOS VIA LINKS SIMBÓLICOS (SYMLINKS)
-            # O Laravel na pasta nova vai "enxergar" o .env e o storage da pasta shared
+            # 3. CONECTAR ARQUIVOS VIA LINKS SIMBÓLICOS
             sudo ln -sfn ${SHARED_PATH}/.env ${NEW_RELEASE}/.env
             sudo rm -rf ${NEW_RELEASE}/storage
             sudo ln -sfn ${SHARED_PATH}/storage ${NEW_RELEASE}/storage
 
-            # 3.5. CONFIGURAR SENTRY SE HOUVER DSN NO .ENV
-            if grep -q "SENTRY_LARAVEL_DSN=" ${SHARED_PATH}/.env; then
-                echo "✓ Sentry DSN encontrado, monitoramento de erros ativo"
-            else
-                echo "ℹ Sentry DSN não configurado, monitoramento de erros desativado"
-            fi
-            
-            # 4. AJUSTAR PERMISSÕES DE DONO (CORREÇÃO ERRO 500)
-            # www-data é o usuário do Nginx/PHP-FPM. Ele precisa ser o dono para ler/escrever.
+            # 4. AJUSTAR PERMISSÕES (USUÁRIO NGINX)
             sudo chown -R www-data:www-data ${NEW_RELEASE}
             sudo chown -R www-data:www-data ${SHARED_PATH}/storage
             
-            # 5. LINK DE ACESSO PÚBLICO AO STORAGE (CORREÇÃO ERRO 404 ICON)
-            # Permite que o navegador acesse arquivos de upload/ícones via URL
+            # 5. LINK DE ACESSO PÚBLICO (STORAGE LINK)
+            # Garante que closer.hierarca.com/storage aponte para as fotos dos usuários
             sudo rm -rf ${NEW_RELEASE}/public/storage
             sudo ln -sfn ${SHARED_PATH}/storage/app/public ${NEW_RELEASE}/public/storage
             
             # 6. COMANDOS INTERNOS DO LARAVEL
             cd ${NEW_RELEASE}
-            sudo -u www-data php artisan migrate --force # Roda migrations sem pedir confirmação
-            sudo -u www-data php artisan optimize # Limpa caches e gera arquivos de rota/config otimizados
-            sudo -u www-data php artisan app:sync-product-images # Verifica e baixa imagens de produtos ausentes
+            sudo -u www-data php artisan migrate --force
+            sudo -u www-data php artisan optimize
             
-            # 7. O PULO DO GATO: SWAP ATÔMICO
-            # Altera o atalho 'current' para a nova pasta. O site atualiza em milissegundos.
+            # NOTA: O comando sync-product-images foi removido por não existir neste projeto.
+            
+            # 7. SWAP ATÔMICO (VIRADA DA CHAVE)
             sudo ln -sfn ${NEW_RELEASE} ${LIVE_LINK}
             
             # 8. REINICIALIZAÇÃO E LIMPEZA
-            sudo systemctl restart php8.4-fpm # Atualizado para 8.4
+            sudo systemctl restart php8.4-fpm
             sudo rm /tmp/${PROJECT}-deploy.zip
             
-            # Opcional: Manter apenas as últimas 5 versões para economizar espaço
+            # Manter apenas as últimas 5 versões para economizar seu VRAM/Disco na Oracle Cloud
             cd ${RELEASES_PATH} && sudo ls -1tr | head -n -5 | xargs -d '\n' rm -rf --
             
-            echo "✅ Deploy atômico finalizado com sucesso!"
+            echo "✅ Deploy de '$PROJECT' finalizado com sucesso!"
           EOF
