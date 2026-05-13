@@ -129,6 +129,13 @@ class JwtAuthController extends Controller
                 'ultimo_login_em' => now(),
             ]);
 
+            // 🔒 Gera novo token JWT com token_version embutido
+            // Isso garante que ao rodar migrate:fresh, os tokens antigos são invalidados
+            // pois o token_version do usuário recriado será diferente do que estava no token
+            $token = JWTAuth::claims([
+                'token_version' => (int) $user->token_version,
+            ])->fromUser($user);
+
             // Gerar Refresh Token persistente para segurança extra
             $refreshData = RefreshToken::generate(
                 $user, 
@@ -209,9 +216,11 @@ class JwtAuthController extends Controller
             // Rotaciona o refresh token (impede reuso de tokens antigos)
             $newData = $tokenModel->rotate([], request()->ip(), request()->userAgent());
             
-            // Gera novo Access Token (JWT)
+            // Gera novo Access Token (JWT) com token_version
             $user = $tokenModel->user;
-            $newAccessToken = JWTAuth::fromUser($user);
+            $newAccessToken = JWTAuth::claims([
+                'token_version' => (int) $user->token_version,
+            ])->fromUser($user);
 
             return $this->respondWithToken($newAccessToken, $user, 'Token atualizado com sucesso.')
                 ->withCookie(cookie(
@@ -323,8 +332,15 @@ class JwtAuthController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
             
-            // Em JWT não há blacklist persistente por padrão
-            // Você pode implementar uma blacklist em Redis/DB se necessário
+            // 🔒 Incrementa token_version para invalidar todos os JWTs ativos
+            // Qualquer token com token_version anterior será rejeitado pelo HybridAuth
+            $user->increment('token_version');
+            
+            // Revoga todos os refresh tokens do usuário
+            RefreshToken::revokeAllForUser($user->id);
+            
+            // Invalida o token atual
+            JWTAuth::invalidate(JWTAuth::getToken());
             
             return $this->respondWithSuccess('Todos os tokens foram revogados. Faça login novamente.');
 

@@ -51,10 +51,12 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [JwtAuthController::class, 'login']);
     
-    Route::middleware(['auth:api'])->group(function () {
+    // Refresh público (usa refresh_token do cookie/body, não o access_token)
+    Route::post('/refresh', [JwtAuthController::class, 'refresh']);
+
+    Route::middleware(['auth.hybrid'])->group(function () {
         Route::get('/me', [JwtAuthController::class, 'me'])->name('api.auth.me');
         Route::post('/logout', [JwtAuthController::class, 'logout']);
-        Route::post('/refresh', [JwtAuthController::class, 'refresh']);
         Route::post('/email/resend', [JwtAuthController::class, 'resend'])->name('verification.resend');
     });
 });
@@ -113,7 +115,7 @@ Route::middleware('throttle:120,1')
 |
 */
 
-Route::middleware(['auth:api', 'verified'])->group(function () {
+Route::middleware(['auth.hybrid', 'verified.hybrid'])->group(function () {
 
     Route::get('/quem-me-deu-like', [LikeController::class, 'index'])->middleware('plus');
 
@@ -234,7 +236,7 @@ Route::middleware(['auth:api', 'verified'])->group(function () {
 | ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth:api', 'level:staff'])->group(function () {
+Route::middleware(['auth.hybrid', 'level:staff'])->group(function () {
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::get('/users/{user}', [UserController::class, 'show']);

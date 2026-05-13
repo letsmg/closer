@@ -18,20 +18,15 @@ use Tymon\JWTAuth\Exceptions\JWTException;
  * - API/Mobile (Flutter): Usa JWT Bearer Token
  * - Web: Usa Session tradicional do Laravel
  * 
- * Como usar:
- * Route::middleware(['auth.hybrid'])->group(...)
- * 
- * Prioridade de verificação:
- * 1. Verifica se há header Authorization com Bearer Token (JWT)
- * 2. Se não, verifica sessão web tradicional
- * 3. Se nenhum válido, retorna erro apropriado baseado no tipo de requisição
+ * 🔒 SEGURANÇA:
+ * - Verifica token_version nos JWTs para invalidar tokens após migrate:fresh
+ * - Verifica sessão ativa na tabela de sessions
+ * - Garante que usuário deletado/recriado não mantenha sessão ativa
  */
 class HybridAuth
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -42,7 +37,7 @@ class HybridAuth
         if ($this->hasJwtToken($request)) {
             try {
                 $user = JWTAuth::parseToken()->authenticate();
-                
+
                 if ($user) {
                     // Verificações adicionais para JWT
                     if (!$user->ativo) {
@@ -53,12 +48,29 @@ class HybridAuth
                         return $this->unauthorized($isApiRequest, 'Email não verificado.', 403);
                     }
 
+                    // 🔒 VALIDAÇÃO CRÍTICA: Verifica token_version
+                    // Após migrate:fresh --seed, todos os usuários são recriados com token_version=1
+                    // Tokens JWT antigos emitidos antes do reset terão token_version=0 ou versão antiga
+                    // Isso invalida TODOS os tokens antigos automaticamente
+                    $tokenVersion = (int) JWTAuth::getPayload()->get('token_version', 0);
+                    if ($tokenVersion === 0 || $tokenVersion !== (int) $user->token_version) {
+                        try {
+                            JWTAuth::invalidate(JWTAuth::getToken());
+                        } catch (\Exception $e) {
+                            // Ignora erros ao invalidar
+                        }
+                        return $this->unauthorized(
+                            $isApiRequest,
+                            'Sessão expirada. Por segurança, faça login novamente.',
+                            401
+                        );
+                    }
+
                     // Define o usuário como autenticado
                     Auth::setUser($user);
-                    
+
                     return $next($request);
                 }
-
             } catch (TokenExpiredException $e) {
                 return $this->unauthorized($isApiRequest, 'Token expirado.', 401);
             } catch (TokenInvalidException $e) {
@@ -74,19 +86,26 @@ class HybridAuth
 
             // Verificações para web
             if (!$user->ativo) {
-                Auth::logout();
-                
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
                 if ($isApiRequest) {
                     return response()->json(['message' => 'Conta desativada.'], 403);
                 }
-                
+
                 return redirect()->route('login')
                     ->with('error', 'Sua conta foi desativada.');
             }
 
+            // 🔒 Para web sessions: ao rodar migrate:fresh a tabela sessions é recriada vazia,
+            // então o cookie de sessão antigo não encontrará registro correspondente,
+            // forçando o usuário a fazer login novamente.
+            // O remember_token armazena um hash no banco que também será diferente após recriação.
+            
             // Define o guard padrão para web
             Auth::shouldUse('web');
-            
+
             return $next($request);
         }
 
@@ -101,7 +120,7 @@ class HybridAuth
     {
         // Verifica header Accept
         $acceptHeader = $request->header('Accept', '');
-        
+
         // Verifica se pede JSON
         if (str_contains($acceptHeader, 'application/json')) {
             return true;

@@ -1,0 +1,79 @@
+1- sempre responda em portugues.
+2- sempre comente os codigos de forma resumida e atualize o readme se for importante
+3- voce tem acesso total ao projeto aberto, não precisa me 
+    pedir autorização para ler ou editar arquivos.
+4- os dados de conexao ao banco de dados estão no .env.  
+5- nunca faça commits ou pushs automaticos sem eu pedir.
+6- vamos fazer o que for pertinente ao software para seguir a ISO 27001.
+7- todas tabelas serão criadas com todos seus campos numa migration create 
+    e nunca deve haver uma migration do tipo add_column separadamente. Estamos
+    em ambiente de desenvolvimento e podemos sempre rodar um migrate fresh seed.
+8- o sistema deve seguir os padrões de mercado quanto a arquitetura e segurança.
+    Exemplos: usar hash argon2id, sanitização stripe tags e trim nas entras e 
+    htmlspecialchars na saída do banco, usar controllers, models, repositories, 
+    requests, services e policies quando necessário.
+9- esse app se trata de um app de relacionamento estilo tinder e suas 
+    regras de negócio são:
+
+    toda conexão com backend será feita via api rest
+        será acessada pelo laravel localmente no servidor em producao 
+        será acessada por app android em dart/flutter
+        banco de dados postgres principal e em casos especificos redis
+
+    usuários customers:
+        usuarios free - grátis
+			podem curtir até 70 perfis por dia 
+			filtrar usuarios por idade, sexo e orientação sexual
+			não podem enviar mensagens se não tiver match			
+			filtrar região dos usuarios que deseja ver e o raio de cidades maximo
+		
+		usuarios plus - custo 15,00 unidades mensais
+			podem curtir ilimitado outros perfis
+			filtrar usuarios por idade, sexo e orientação sexual
+			podem enviar até 10 mensagens por dia para perfis sem match ativo			
+			filtrar região dos usuarios que deseja ver e o raio de cidades maximo (de 0 limitado até 200km)
+			pode bloquear uma região que não quer ver perfis, nem  que o seu seja mostrado (de 0 a 200km)
+			pode esconder sua localização
+		
+		usuarios premium - custo 19,90 unidades mensais
+			podem curtir limitado outros perfis
+			filtrar usuarios por idade, sexo e orientação sexual
+			podem enviar mensagens limitadas para perfis sem match ativo			
+			filtrar região dos usuarios que deseja ver e o raio de cidades maximo (de 0 limitado até 200km)
+			pode bloquear uma região que não quer ver perfis, nem  que o seu seja mostrado (de 0 a 200km)			
+			pode esconder sua localização
+			podem ver perfis que curtiram o seu proprio perfil
+			pode ficar invisível aos outros usuarios
+
+    usuários staff
+        ADMIN
+            acesso total
+
+        OPERATIONAL
+            poderá apenas visualizar informações dos usuarios:
+                customers com exceção dos dados de localização e pagamentos
+                    (foco principal em analise de denúncias e banimento)
+                support onde poderão bloquear, reativar ou resetar senha
+                outros operational - poderão bloquear, reativar ou resetar senha
+
+        SUPPORT
+            poderá apenas responder emails de contato ou chat futuramente
+            visualizar denuncias de usuários customers
+            enviar mensagens aos demais usuários staff
+        
+        configuracao no ENUMS
+        //customer
+        case FREE = 0;          // Usuário padrão/gratuito
+        case MODERATOR = 1;     // Usuário poderá bloquear acesso de outros customers com exceção dos niveis 4 e 5
+        case PLUS = 2;          // Usuário Plus (pago básico)
+        case PREMIUM = 3;       // Usuário Premium (pago avançado)
+        case COFOUNDER = 4;     // Usuário Premium (poderá enviar solicitacoes diretas)
+        case ELITE = 5;         // Usuário Premium (pago avançado)
+        
+        //staff
+        case ADMIN = 10;         // Administrador do sistema
+        case OPERATIONAL = 11;   // Operacional (abaixo do admin)
+        case SUPPORT = 12;       // Suporte ao cliente
+	
+
+10- avise quando terminar a tarefa.

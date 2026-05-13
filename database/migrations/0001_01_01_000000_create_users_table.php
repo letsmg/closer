@@ -33,8 +33,15 @@ return new class extends Migration
             $table->timestamp('ultimo_login_em')->nullable();
             $table->string('ultimo_ip', 45)->nullable();
             $table->timestamp('last_seen')->nullable();
-            
+
+            // Daily limits for free tier
+            $table->unsignedSmallInteger('daily_likes_count')->default(0);
+            $table->date('daily_likes_date')->nullable();
+            $table->unsignedSmallInteger('daily_messages_count')->default(0);
+            $table->date('daily_messages_date')->nullable();
+
             $table->rememberToken();
+            $table->unsignedInteger('token_version')->default(1); // Incrementado ao resetar banco ou revogar todas as sessões
             $table->timestamps();
         });
         

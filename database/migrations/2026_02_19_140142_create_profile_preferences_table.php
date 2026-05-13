@@ -52,6 +52,23 @@ return new class extends Migration
             $table->enum('visibility', ['public', 'hidden', 'matches_only'])->default('public');
 
             $table->boolean('allow_global_search')->default(false);
+
+            // Premium/Plus features
+            $table->boolean('hide_location')->default(false);
+            $table->boolean('invisible_mode')->default(false);
+
+            // Interests filter (up to 8 interests)
+            $table->json('interested_hobbies')->nullable();
+
+            // Level-based discoverability for COFOUNDER and ELITE
+            $table->json('discoverable_levels')
+                ->nullable()
+                ->comment('Niveis de usuario que este perfil deseja ver (para COFOUNDER e ELITE)');
+
+            $table->json('visible_levels')
+                ->nullable()
+                ->comment('Niveis de usuario que podem ver este perfil (para COFOUNDER e ELITE)');
+
             $table->timestamps();
 
             // Guarantee 1 preference per profile

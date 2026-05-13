@@ -24,5 +24,13 @@ class DatabaseSeeder extends Seeder
             ReportSeeder::class,
             ProfileSeeder::class, // Profiles + Preferences + Hobbies for regular users
         ]);
+        
+        // 🔒 Define token_version único baseado em timestamp para cada seed
+        // Isso invalida automaticamente todos os JWTs emitidos ANTES deste seed
+        // O HybridAuth verifica se o token_version do JWT corresponde ao do banco
+        $seedVersion = now()->timestamp;
+        \App\Models\User::query()->update(['token_version' => $seedVersion]);
+        
+        $this->command->info("Token version definido para: {$seedVersion}");
     }
 }

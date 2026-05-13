@@ -36,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'daily_likes_date',
         'daily_messages_count',
         'daily_messages_date',
+        'token_version',
     ];
 
     /**
@@ -56,6 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'token_version',
     ];
 
     /*
@@ -70,6 +72,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
             'ativo' => 'boolean',
             'password' => 'hashed', // Automatic hash on save
             'nivel_acesso' => 'integer',
+            'token_version' => 'integer',
         ];
     }
 
@@ -159,6 +162,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         return [
             'uuid' => $this->uuid,
             'level' => $this->nivel_acesso,
+            'token_version' => (int) $this->token_version,
         ];
     }
 

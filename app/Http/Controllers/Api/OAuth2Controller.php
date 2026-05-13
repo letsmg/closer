@@ -223,9 +223,11 @@ class OAuth2Controller extends Controller
     protected function generateTokenResponse(User $user, array $scopes, Request $request): array
     {
         // Access Token JWT (short-lived: 15 minutos)
+        // 🔒 Inclui token_version para validação pelo HybridAuth
         $accessToken = JWTAuth::claims([
             'scopes' => $scopes,
             'token_type' => 'access_token',
+            'token_version' => (int) $user->token_version,
         ])->fromUser($user);
 
         // Refresh Token (long-lived: 30 dias com rotação)

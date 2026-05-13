@@ -79,9 +79,9 @@ class WebAuthController extends Controller
         $credentials = $request->only('email', 'password');
         $remember = $request->boolean('remember');
 
-        // Se for admin, desabilita o "Lembrar-me" por segurança (5 min timeout)
+        // Se for staff (nível >= 10), desabilita o "Lembrar-me" por segurança
         $userPre = User::where('email', $request->email)->first();
-        if ($userPre && $userPre->nivel >= 3) {
+        if ($userPre && $userPre->isAdminLevel()) {
             $remember = false;
         }
 
@@ -202,10 +202,10 @@ class WebAuthController extends Controller
      */
     private function redirectBasedOnRole($user)
     {
-        // Admin (nível 3)
-        if ($user->nivel === 3) {
+        // Staff (Admin, Operacional, Suporte)
+        if ($user->isAdminLevel()) {
             return redirect()->intended('/admin/dashboard')
-                ->with('success', 'Bem-vindo(a), Administrador!');
+                ->with('success', 'Bem-vindo(a)!');
         }
 
         // Usuários padrão

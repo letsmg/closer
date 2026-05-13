@@ -34,10 +34,15 @@ Route::prefix('api/auth')->group(function () {
     Route::post('/register', [UserController::class, 'register'])->name('api.auth.register');
     Route::post('/login', [JwtAuthController::class, 'login'])->name('api.auth.login');
     
-    // Rotas protegidas (requerem JWT)
-    Route::middleware(['auth:api'])->group(function () {
+    // Refresh público (usa refresh_token do cookie/body, não o access_token)
+    // ⚠ Deve ficar FORA do auth.hybrid para funcionar mesmo com token expirado
+    Route::post('/refresh', [JwtAuthController::class, 'refresh'])->name('api.auth.refresh');
+
+    // Rotas protegidas (requerem JWT) 
+    // ⚠ Usa auth.hybrid em vez de auth:api para garantir verificação de token_version
+    // auth:api padrão do tymon NÃO valida token_version, permitindo sessões inválidas após migrate:fresh
+    Route::middleware(['auth.hybrid'])->group(function () {
         Route::post('/logout', [JwtAuthController::class, 'logout'])->name('api.auth.logout');
-        Route::post('/refresh', [JwtAuthController::class, 'refresh'])->name('api.auth.refresh');
         Route::get('/me', [JwtAuthController::class, 'me'])->name('api.auth.me');
         Route::post('/revoke-all', [JwtAuthController::class, 'revokeAllTokens'])->name('api.auth.revoke-all');
     });
@@ -102,7 +107,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 });
 
 // API - Verificação de email via endpoint
-Route::prefix('api')->middleware(['auth:api'])->group(function () {
+Route::prefix('api')->middleware(['auth.hybrid'])->group(function () {
     Route::get('/email/verify-status', function () {
         return response()->json([
             'verified' => request()->user()->hasVerifiedEmail(),

@@ -94,6 +94,10 @@ class AuthService
             'is_new_device' => $fingerprintResult['is_new_device'],
         ]);
 
+        // 🔒 Garante que token_version está sincronizado
+        // (força reload do token_version do banco, útil se acabou de recriar)
+        $user->refresh();
+
         // Gera tokens
         return $this->generateTokenResponse($user, $grantedScopes, $request, $fingerprintResult);
     }
@@ -211,10 +215,12 @@ class AuthService
     private function generateTokenResponse(User $user, array $scopes, Request $request, array $fingerprintResult): array
     {
         // Access Token JWT (short-lived: 15 minutos)
+        // 🔒 Inclui token_version para invalidar tokens após migrate:fresh
         $accessToken = JWTAuth::claims([
             'scopes' => $scopes,
             'token_type' => 'access_token',
             'fingerprint' => $fingerprintResult['fingerprint'],
+            'token_version' => (int) $user->token_version,
         ])->fromUser($user);
 
         // Refresh Token (long-lived: 30 dias com rotação)
@@ -262,9 +268,11 @@ class AuthService
      */
     private function generateTokenResponseFromRefresh(User $user, array $scopes, array $refreshTokenData): array
     {
+        // 🔒 Inclui token_version no refresh para validar sessão
         $accessToken = JWTAuth::claims([
             'scopes' => $scopes,
             'token_type' => 'access_token',
+            'token_version' => (int) $user->token_version,
         ])->fromUser($user);
 
         return [

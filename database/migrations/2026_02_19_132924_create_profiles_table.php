@@ -31,6 +31,9 @@ return new class extends Migration
             $table->string('profession')->nullable();
             $table->text('biography')->nullable();
 
+            // Contact methods (up to 3 apps)
+            $table->text('contact_methods')->nullable();
+
             // Habits
             $table->string('smoker')->nullable();
             $table->string('drinker')->nullable();
@@ -67,6 +70,11 @@ return new class extends Migration
             $table->string('assinatura_id')->nullable(); 
             $table->integer('reputacao')->default(0)->index();
             $table->timestamp('premium_expira_em')->nullable();
+
+            // Verification
+            $table->boolean('is_verified')->default(false);
+            $table->timestamp('verified_at')->nullable();
+
             $table->timestamp('ultima_interacao_at')->nullable()->index();
             $table->timestamp('ultima_conversa_at')->nullable()->index();
 
