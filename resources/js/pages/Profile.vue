@@ -174,7 +174,31 @@
         </svg>
       </button>
 
-      <!-- 5. Preferências de busca -->
+      <!-- 5. Plano e Upgrade -->
+      <button
+        @click="abaAtiva = 'upgrade'"
+        class="w-full bg-white rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div class="text-left">
+            <p class="text-sm font-semibold text-gray-900">Plano & Upgrade</p>
+            <p class="text-xs text-gray-500">
+              <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold text-white mr-1" :class="nivelBadgeClass">{{ nivelLabel }}</span>
+              · Veja vantagens de Plus, Premium e mais
+            </p>
+          </div>
+        </div>
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      <!-- 6. Preferências de busca -->
       <button
         @click="abaAtiva = 'preferencias'"
         class="w-full bg-white rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow"
@@ -195,7 +219,7 @@
         </svg>
       </button>
 
-      <!-- 6. Segurança (2FA/Senha) -->
+      <!-- 7. Segurança (2FA/Senha) -->
       <RouterLink
         to="/2fa"
         class="w-full bg-white rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow"
@@ -429,6 +453,164 @@
       </Dialog>
     </TransitionRoot>
 
+    <!-- Modal Upgrade (Planos) -->
+    <TransitionRoot appear :show="abaAtiva === 'upgrade'" as="template">
+      <Dialog as="div" @close="abaAtiva = null" class="relative z-50">
+        <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0" enter-to="opacity-100" leave="duration-200 ease-in" leave-from="opacity-100" leave-to="opacity-0">
+          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        </TransitionChild>
+        <div class="fixed inset-0 overflow-y-auto">
+          <div class="flex min-h-full items-end justify-center">
+            <TransitionChild as="template" enter="duration-300 ease-out" enter-from="translate-y-full" enter-to="translate-y-0" leave="duration-200 ease-in" leave-from="translate-y-0" leave-to="translate-y-full">
+              <DialogPanel class="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl p-6 pb-10 transform transition-all">
+                <div class="flex items-center justify-between mb-6">
+                  <DialogTitle class="text-lg font-bold text-gray-900">Seu Plano</DialogTitle>
+                  <button @click="abaAtiva = null" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-2">Seu nível atual:</p>
+                <div class="flex items-center gap-3 mb-6 p-3 rounded-xl bg-gray-50">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm" :class="nivelBadgeClass">
+                    {{ nivelLabel?.[0] || '?' }}
+                  </div>
+                  <div>
+                    <p class="text-base font-bold text-gray-900">{{ nivelLabel }}</p>
+                    <p class="text-xs text-gray-500">{{ planoDescricao }}</p>
+                  </div>
+                </div>
+
+                <!-- Tabela comparativa -->
+                <p class="text-sm font-semibold text-gray-900 mb-3">Compare os planos</p>
+                <div class="space-y-2">
+                  <div
+                    v-for="plano in planos"
+                    :key="plano.nivel"
+                    class="rounded-xl border-2 p-4 transition-all"
+                    :class="[
+                      plano.nivel === authStore.user?.nivel_acesso
+                        ? 'border-pink-400 bg-pink-50'
+                        : 'border-gray-100 hover:border-pink-200'
+                    ]"
+                  >
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <span
+                          class="inline-block px-2 py-0.5 rounded-full text-xs font-bold text-white"
+                          :class="plano.badgeClass"
+                        >
+                          {{ plano.nome }}
+                        </span>
+                        <span class="text-xs text-gray-400 ml-2">{{ plano.preco }}</span>
+                      </div>
+                      <button
+                        v-if="plano.nivel !== authStore.user?.nivel_acesso && plano.nivel > (authStore.user?.nivel_acesso || 0)"
+                        class="text-xs font-semibold px-4 py-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow hover:shadow-md transition-all"
+                      >
+                        Fazer Upgrade
+                      </button>
+                      <span
+                        v-else-if="plano.nivel === authStore.user?.nivel_acesso"
+                        class="text-xs font-semibold text-pink-600"
+                      >
+                        ✔ Atual
+                      </span>
+                    </div>
+                    <ul class="space-y-1">
+                      <li
+                        v-for="item in plano.itens"
+                        :key="item"
+                        class="flex items-start gap-2 text-xs text-gray-600"
+                      >
+                        <svg class="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span v-html="item"></span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+
+    <!-- Modal Bloqueios -->
+    <TransitionRoot appear :show="abaAtiva === 'bloqueios'" as="template">
+      <Dialog as="div" @close="abaAtiva = null" class="relative z-50">
+        <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0" enter-to="opacity-100" leave="duration-200 ease-in" leave-from="opacity-100" leave-to="opacity-0">
+          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+        </TransitionChild>
+        <div class="fixed inset-0 overflow-y-auto">
+          <div class="flex min-h-full items-end justify-center">
+            <TransitionChild as="template" enter="duration-300 ease-out" enter-from="translate-y-full" enter-to="translate-y-0" leave="duration-200 ease-in" leave-from="translate-y-0" leave-to="translate-y-full">
+              <DialogPanel class="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl p-6 pb-10 transform transition-all">
+                <div class="flex items-center justify-between mb-6">
+                  <DialogTitle class="text-lg font-bold text-gray-900">Bloqueios</DialogTitle>
+                  <button @click="abaAtiva = null" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-4">Gerencie usuários e regiões bloqueados.</p>
+
+                <!-- Usuários bloqueados -->
+                <div class="mb-6">
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Usuários Bloqueados</h3>
+                  </div>
+                  <div v-if="!usuariosBloqueados?.length" class="text-center py-6 bg-gray-50 rounded-xl">
+                    <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                    <p class="text-xs text-gray-400">Nenhum usuário bloqueado</p>
+                  </div>
+                  <div v-else class="space-y-2">
+                    <div v-for="u in usuariosBloqueados" :key="u.id" class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">
+                          {{ u.name?.[0]?.toUpperCase() || '?' }}
+                        </div>
+                        <p class="text-sm font-medium text-gray-700">{{ u.name }}</p>
+                      </div>
+                      <button @click="desbloquearUsuario(u.id)" class="text-xs text-pink-600 hover:text-pink-700 font-medium">Desbloquear</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Regiões bloqueadas -->
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Regiões Bloqueadas</h3>
+                  </div>
+                  <div v-if="!regioesBloqueadas?.length" class="text-center py-6 bg-gray-50 rounded-xl">
+                    <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <p class="text-xs text-gray-400">Nenhuma região bloqueada</p>
+                  </div>
+                  <div v-else class="space-y-2">
+                    <div v-for="r in regioesBloqueadas" :key="r.id" class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                      <p class="text-sm text-gray-700">{{ r.city?.name || r.state?.name || r.country?.name || 'Região' }}</p>
+                      <button @click="desbloquearRegiao(r.id)" class="text-xs text-pink-600 hover:text-pink-700 font-medium">Remover</button>
+                    </div>
+                  </div>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+
     <!-- Modal Preferências de Busca -->
     <TransitionRoot appear :show="abaAtiva === 'preferencias'" as="template">
       <Dialog as="div" @close="abaAtiva = null" class="relative z-50">
@@ -655,9 +837,123 @@ const purposeLabel = (p) => {
   return map[p] || p;
 };
 
+const planos = computed(() => [
+  {
+    nivel: 0,
+    nome: 'Free',
+    preco: 'Grátis',
+    badgeClass: 'bg-gray-500',
+    itens: [
+      'Até <b>70 curtidas</b> por dia',
+      'Filtrar por idade, sexo e orientação',
+      'Enviar mensagens <b>após match</b>',
+      'Filtrar região e raio de cidades',
+    ],
+  },
+  {
+    nivel: 2,
+    nome: 'Plus',
+    preco: 'R$ 15,00/mês',
+    badgeClass: 'bg-green-500',
+    itens: [
+      'Curtidas <b>ilimitadas</b>',
+      'Filtrar por idade, sexo e orientação',
+      'Até <b>10 mensagens/dia</b> sem match',
+      'Filtrar região com raio <b>0-200km</b>',
+      'Bloquear regiões que não quer ver',
+      '<b>Esconder localização</b>',
+    ],
+  },
+  {
+    nivel: 3,
+    nome: 'Premium',
+    preco: 'R$ 19,90/mês',
+    badgeClass: 'bg-purple-500',
+    itens: [
+      'Curtidas <b>ilimitadas</b>',
+      'Filtrar por idade, sexo e orientação',
+      'Mensagens <b>limitadas</b> sem match',
+      'Filtrar região com raio <b>0-200km</b>',
+      'Bloquear regiões que não quer ver',
+      '<b>Esconder localização</b>',
+      'Ver quem <b>curtiu seu perfil</b>',
+      '<b>Modo invisível</b> — ninguém te vê',
+    ],
+  },
+  {
+    nivel: 4,
+    nome: 'Co-Founder',
+    preco: 'Sob consulta',
+    badgeClass: 'bg-yellow-500',
+    itens: [
+      'Todos os benefícios do Premium',
+      '<b>Solicitações diretas</b> para outros perfis',
+      'Suporte prioritário',
+    ],
+  },
+  {
+    nivel: 5,
+    nome: 'Elite',
+    preco: 'Sob consulta',
+    badgeClass: 'bg-pink-500',
+    itens: [
+      'Todos os benefícios do Co-Founder',
+      'Acesso total a todas funcionalidades',
+      'Suporte VIP 24h',
+    ],
+  },
+]);
+
+const planoDescricao = computed(() => {
+  const level = authStore.user?.nivel_acesso;
+  const descs = {
+    0: 'Usuário gratuito — aproveite o básico do app',
+    1: 'Moderador — pode bloquear acesso de outros usuários',
+    2: 'Usuário Plus — curtidas ilimitadas e mensagens sem match',
+    3: 'Usuário Premium — modo invisível e quem curtiu você',
+    4: 'Co-Founder — solicitações diretas',
+    5: 'Elite — acesso VIP completo',
+  };
+  return descs[level] || 'Plano personalizado';
+});
+
+const usuariosBloqueados = ref([]);
+const regioesBloqueadas = ref([]);
+
 const hobbySelecionado = (id) => {
   return profile.value?.hobbies?.some(h => h.id === id || h.pivot?.hobby_id === id);
 };
+
+async function carregarBloqueios() {
+  try {
+    const [usersRes, regioesRes] = await Promise.all([
+      axios.get('/api/blocks/users'),
+      axios.get('/api/blocks/regions'),
+    ]);
+    usuariosBloqueados.value = usersRes.data.data || usersRes.data || [];
+    regioesBloqueadas.value = regioesRes.data.data || regioesRes.data || [];
+  } catch (e) {
+    console.error('Erro ao carregar bloqueios:', e);
+  }
+}
+
+async function desbloquearUsuario(userId) {
+  try {
+    await axios.delete(`/api/blocks/users/${userId}`);
+    usuariosBloqueados.value = usuariosBloqueados.value.filter(u => u.id !== userId);
+  } catch (e) {
+    console.error('Erro ao desbloquear usuário:', e);
+  }
+}
+
+async function desbloquearRegiao(regionId) {
+  try {
+    await axios.delete(`/api/blocks/regions/${regionId}`);
+    regioesBloqueadas.value = regioesBloqueadas.value.filter(r => r.id !== regionId);
+  } catch (e) {
+    console.error('Erro ao desbloquear região:', e);
+  }
+}
 
 // Carregar dados
 async function carregarPerfil() {
@@ -767,5 +1063,6 @@ async function salvarPreferenciasBusca() {
 onMounted(async () => {
   await carregarPerfil();
   await carregarHobbies();
+  await carregarBloqueios();
 });
 </script>
