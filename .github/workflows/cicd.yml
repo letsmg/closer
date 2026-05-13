@@ -14,7 +14,7 @@ jobs:
       - name: 🐘 Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3.6' # Ajustado para sua versão exata
+          php-version: '8.3.6'
           extensions: mbstring, bcmath, gd, zip, pgsql, pdo_sqlite
           coverage: none
 
@@ -78,8 +78,15 @@ jobs:
             sudo rm -rf ${NEW_RELEASE}/public/storage
             sudo ln -sfn ${SHARED_PATH}/storage/app/public ${NEW_RELEASE}/public/storage
             
-            # 6. ARTISAN (Usando PHP 8.3)
+            # 6. ARTISAN E AUTOLOAD (Executado no Servidor)
             cd ${NEW_RELEASE}
+            
+            # Força o Composer a mapear as classes no novo caminho físico
+            sudo -u www-data composer dump-autoload --optimize
+            
+            # Limpa caches que podem conter caminhos absolutos do GitHub Actions
+            sudo -u www-data php artisan optimize:clear
+            
             sudo -u www-data php artisan migrate --force
             sudo -u www-data php artisan optimize
             
@@ -87,12 +94,11 @@ jobs:
             sudo ln -sfn ${NEW_RELEASE} ${LIVE_LINK}
             
             # 8. REINICIALIZAÇÃO E LIMPEZA
-            # Ajustado para php8.3-fpm conforme sua versão
             sudo systemctl restart php8.3-fpm 
             sudo rm -f /tmp/${PROJECT}-deploy.zip
             
-            # Limpeza com sudo para evitar o erro de permissão negada
+            # Limpeza de releases antigas
             cd ${RELEASES_PATH} && sudo ls -1tr | head -n -5 | xargs -d '\n' sudo rm -rf --
             
-            echo "✅ Deploy de '$PROJECT' (PHP 8.3.6) finalizado!"
+            echo "✅ Deploy de '$PROJECT' finalizado com sucesso!"
           EOF

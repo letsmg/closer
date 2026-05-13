@@ -107,7 +107,6 @@ class DiscoveryController extends Controller
                      ->where('profile_photos.is_primary', true);
             })
             ->where('users.ativo', true)
-            ->whereNull('users.deleted_at')
             ->whereNotIn('profiles.user_id', $excludeUserIds);
 
         // 1. Apenas pessoas ativas que não estejam invisíveis
@@ -207,10 +206,10 @@ class DiscoveryController extends Controller
             $haversine = "(6371 * acos(cos(radians($lat)) * cos(radians(cities.latitude)) * cos(radians(cities.longitude) - radians($lng)) + sin(radians($lat)) * sin(radians(cities.latitude)) * sin(radians(cities.longitude) - radians($lng))))";
 
             $query->join('cities', 'cities.id', '=', 'profiles.city_id')
-                ->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, {$haversine} AS distance, profile_photos.path as primary_photo_path, profile_photos.full_url as primary_photo_url")
+                ->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, {$haversine} AS distance, profile_photos.path as primary_photo_path")
                 ->havingRaw("distance <= ?", [$radius]);
         } else {
-            $query->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, 0 AS distance, profile_photos.path as primary_photo_path, profile_photos.full_url as primary_photo_url");
+            $query->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, 0 AS distance, profile_photos.path as primary_photo_path");
         }
 
         // =============================

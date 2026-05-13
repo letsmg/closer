@@ -189,6 +189,15 @@ class Profile extends Model
         return $this->photos()->where('is_primary', true)->first();
     }
 
+    /**
+     * Retorna a URL completa da foto principal (via accessor para uso em selectRaw)
+     */
+    public function getPrimaryPhotoUrlAttribute()
+    {
+        $photo = $this->photos()->where('is_primary', true)->first() ?? $this->photos()->first();
+        return $photo ? $photo->full_url : null;
+    }
+
     public function isVisible()
     {
         return $this->visibility === 'public';
