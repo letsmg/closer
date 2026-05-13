@@ -1,31 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <!-- Top Navigation -->
-    <header class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <img 
-            src="/storage/logo.png" 
-            alt="Closer" 
-            class="h-8 w-auto"
-            onerror="this.style.display='none'"
-          />
-        </div>
-        <div class="flex items-center gap-3">
-          <RouterLink to="/matches" class="text-gray-500 hover:text-indigo-600 transition-colors">
-            <span class="text-xl">💬</span>
-          </RouterLink>
-          <RouterLink to="/profile" class="text-gray-500 hover:text-indigo-600 transition-colors">
-            <span class="text-xl">👤</span>
-          </RouterLink>
-        </div>
-      </div>
-    </header>
-
+  <AppLayout>
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center min-h-[70vh]">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4" />
         <p class="text-gray-500">Carregando perfis...</p>
       </div>
     </div>
@@ -33,12 +11,16 @@
     <!-- Needs profile -->
     <div v-else-if="needsProfile" class="flex items-center justify-center min-h-[70vh]">
       <div class="text-center px-4">
-        <span class="text-6xl block mb-4">👤</span>
+        <div class="w-20 h-20 rounded-full bg-pink-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-10 h-10 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
         <h2 class="text-xl font-semibold text-gray-800 mb-2">Perfil incompleto</h2>
-        <p class="text-gray-500 mb-6">Você precisa completar seu perfil antes de descobrir novas pessoas.</p>
+        <p class="text-gray-500 mb-6">Complete seu perfil antes de descobrir novas pessoas.</p>
         <button
           @click="router.push('/profile')"
-          class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          class="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
         >
           Completar Perfil
         </button>
@@ -46,14 +28,18 @@
     </div>
 
     <!-- Error message -->
-    <div v-else-if="errorMessage" class="flex items-center justify-center min-h-[70vh]">
-      <div class="text-center px-4">
-        <span class="text-6xl block mb-4">⚠️</span>
+    <div v-else-if="errorMessage" class="flex items-center justify-center min-h-[70vh] px-4">
+      <div class="text-center">
+        <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+        </div>
         <h2 class="text-xl font-semibold text-gray-800 mb-2">Ops! Algo deu errado</h2>
         <p class="text-gray-500 mb-6">{{ errorMessage }}</p>
         <button
           @click="loadProfiles"
-          class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          class="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
         >
           Tentar novamente
         </button>
@@ -61,14 +47,18 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="profiles.length === 0" class="flex items-center justify-center min-h-[70vh]">
-      <div class="text-center px-4">
-        <span class="text-6xl block mb-4">🔍</span>
+    <div v-else-if="profiles.length === 0" class="flex items-center justify-center min-h-[70vh] px-4">
+      <div class="text-center">
+        <div class="w-20 h-20 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
         <h2 class="text-xl font-semibold text-gray-800 mb-2">Nenhum perfil encontrado</h2>
-        <p class="text-gray-500 mb-6">No momento não há novos perfis para mostrar. Volte mais tarde!</p>
+        <p class="text-gray-500 mb-6">No momento não há novos perfis para mostrar.</p>
         <button
           @click="loadProfiles"
-          class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          class="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
         >
           Atualizar
         </button>
@@ -76,40 +66,41 @@
     </div>
 
     <!-- Swipe Cards -->
-    <div v-else class="max-w-sm mx-auto mt-8 px-4">
+    <div v-else class="px-4 pt-4 pb-24">
+      <!-- Filtros Co-Founder/Elite -->
       <section
         v-if="canUseLevelFilters"
-        class="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+        class="mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
       >
         <div class="flex items-center justify-between gap-3">
           <div>
-            <h2 class="text-sm font-semibold text-gray-900">Filtros por nivel</h2>
-            <p class="text-xs text-gray-500">Disponivel para Co-Founder e Elite.</p>
+            <h2 class="text-sm font-semibold text-gray-900">Filtros por nível</h2>
+            <p class="text-xs text-gray-500">Disponível para Co-Founder e Elite.</p>
           </div>
           <button
             type="button"
             @click="saveLevelPreferences"
             :disabled="savingLevelPreferences"
-            class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+            class="rounded-full bg-pink-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-pink-600 disabled:opacity-50 transition-all"
           >
             {{ savingLevelPreferences ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
 
-        <div class="mt-4 grid grid-cols-1 gap-4">
+        <div class="mt-4 grid grid-cols-2 gap-4">
           <fieldset>
             <legend class="mb-2 text-xs font-medium text-gray-700">Quero ver</legend>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="space-y-2">
               <label
                 v-for="level in customerLevelOptions"
                 :key="`see-${level.value}`"
-                class="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700"
+                class="flex items-center gap-2 rounded-lg border border-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-pink-50"
               >
                 <input
                   v-model="levelFilters.discoverable_levels"
                   type="checkbox"
                   :value="level.value"
-                  class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  class="h-4 w-4 rounded border-gray-300 text-pink-500 focus:ring-pink-400"
                 />
                 <span>{{ level.label }}</span>
               </label>
@@ -117,18 +108,18 @@
           </fieldset>
 
           <fieldset>
-            <legend class="mb-2 text-xs font-medium text-gray-700">Podem ver meu perfil</legend>
-            <div class="grid grid-cols-2 gap-2">
+            <legend class="mb-2 text-xs font-medium text-gray-700">Podem ver</legend>
+            <div class="space-y-2">
               <label
                 v-for="level in customerLevelOptions"
                 :key="`visible-${level.value}`"
-                class="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700"
+                class="flex items-center gap-2 rounded-lg border border-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-purple-50"
               >
                 <input
                   v-model="levelFilters.visible_levels"
                   type="checkbox"
                   :value="level.value"
-                  class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  class="h-4 w-4 rounded border-gray-300 text-purple-500 focus:ring-purple-400"
                 />
                 <span>{{ level.label }}</span>
               </label>
@@ -137,77 +128,77 @@
         </div>
       </section>
 
-      <div class="relative" style="min-height: 580px;">
-      <!-- Card atual -->
-      <div
-        v-for="(profile, index) in visibleCards"
-        :key="profile.id"
-        class="absolute inset-0 transition-transform duration-300 cursor-grab active:cursor-grabbing"
-        :style="{
-          zIndex: visibleCards.length - index,
-          transform: `scale(${1 - index * 0.02}) translateY(${index * 8}px)`,
-          opacity: 1 - index * 0.1,
-        }"
-      >
-        <SwipeProfileCard
-          :profile="profile"
-          :card-height="560"
-        />
-      </div>
+      <!-- Cards -->
+      <div class="relative" style="min-height: 520px;">
+        <div
+          v-for="(profile, index) in visibleCards"
+          :key="profile.id"
+          class="absolute inset-0 transition-transform duration-300 cursor-grab active:cursor-grabbing"
+          :style="{
+            zIndex: visibleCards.length - index,
+            transform: `scale(${1 - index * 0.02}) translateY(${index * 8}px)`,
+            opacity: 1 - index * 0.1,
+          }"
+        >
+          <SwipeProfileCard
+            :profile="profile"
+            :card-height="520"
+          />
+        </div>
 
-      <!-- Match overlay -->
-      <div
-        v-if="showMatchOverlay"
-        class="absolute inset-0 z-50 bg-gradient-to-b from-pink-500/90 to-purple-600/90 rounded-2xl flex items-center justify-center"
-      >
-        <div class="text-center text-white animate-bounce">
-          <span class="text-6xl block mb-4">💕</span>
-          <h2 class="text-3xl font-bold mb-2">It's a Match!</h2>
-          <p class="text-white/80 mb-6">Você e {{ matchedUserName }} deram like um no outro</p>
-          <button
-            @click="showMatchOverlay = false"
-            class="px-8 py-3 bg-white text-purple-600 rounded-full font-semibold hover:bg-purple-50 transition-colors"
-          >
-            Continuar
-          </button>
+        <!-- Match overlay -->
+        <div
+          v-if="showMatchOverlay"
+          class="absolute inset-0 z-50 bg-gradient-to-b from-pink-500/90 to-purple-600/90 rounded-2xl flex items-center justify-center"
+        >
+          <div class="text-center text-white animate-bounce">
+            <span class="text-6xl block mb-4">💕</span>
+            <h2 class="text-3xl font-bold mb-2">It's a Match!</h2>
+            <p class="text-white/80 mb-6">Você e {{ matchedUserName }} deram like um no outro</p>
+            <button
+              @click="showMatchOverlay = false"
+              class="px-8 py-3 bg-white text-purple-600 rounded-full font-semibold hover:bg-purple-50 transition-colors"
+            >
+              Continuar
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-center gap-6 mt-6">
+        <button
+          @click="handleDislike"
+          class="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center text-red-400 hover:shadow-xl hover:scale-110 hover:text-red-500 transition-all"
+          :disabled="isProcessing"
+        >
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <button
+          @click="handleLike"
+          class="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full shadow-xl flex items-center justify-center text-white hover:shadow-2xl hover:scale-110 transition-all"
+          :disabled="isProcessing"
+        >
+          <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </button>
+
+        <button
+          @click="handleLike"
+          class="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center text-green-400 hover:shadow-xl hover:scale-110 hover:text-green-500 transition-all"
+          :disabled="isProcessing"
+        >
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+          </svg>
+        </button>
       </div>
     </div>
-
-    <!-- Action Buttons -->
-    <div
-      v-if="profiles.length > 0 && !loading"
-      class="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6"
-    >
-      <!-- Dislike (X) -->
-      <button
-        @click="handleDislike"
-        class="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center text-red-500 hover:shadow-xl hover:scale-110 transition-all"
-        :disabled="isProcessing"
-      >
-        <span class="text-3xl">✕</span>
-      </button>
-
-      <!-- Super Like (Star) -->
-      <button
-        @click="handleLike"
-        class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl hover:scale-110 transition-all"
-        :disabled="isProcessing"
-      >
-        <span class="text-4xl">⭐</span>
-      </button>
-
-      <!-- Like (Heart) -->
-      <button
-        @click="handleLike"
-        class="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center text-green-500 hover:shadow-xl hover:scale-110 transition-all"
-        :disabled="isProcessing"
-      >
-        <span class="text-3xl">❤</span>
-      </button>
-    </div>
-  </div>
+  </AppLayout>
 </template>
 
 <script setup>
@@ -215,6 +206,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../api';
 import { useAuthStore } from '../stores/auth';
+import AppLayout from '../components/AppLayout.vue';
 import SwipeProfileCard from '../components/SwipeProfileCard.vue';
 
 const router = useRouter();

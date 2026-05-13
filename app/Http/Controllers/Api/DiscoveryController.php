@@ -164,7 +164,7 @@ class DiscoveryController extends Controller
             // 5. Idade (mínimo 18, máximo 85)
             $minAge = max(18, $preference->min_age ?? 18);
             $maxAge = min(85, $preference->max_age ?? 85);
-            $query->whereBetween(DB::raw('TIMESTAMPDIFF(YEAR, profiles.birth_date, CURDATE())'), [$minAge, $maxAge]);
+            $query->whereBetween(DB::raw('EXTRACT(YEAR FROM AGE(profiles.birth_date))'), [$minAge, $maxAge]);
 
             // 4. Gênero e orientação sexual compatível
             if (!empty($preference->gender) && $preference->gender !== 'todos') {
@@ -207,7 +207,8 @@ class DiscoveryController extends Controller
 
             $query->join('cities', 'cities.id', '=', 'profiles.city_id')
                 ->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, {$haversine} AS distance, profile_photos.path as primary_photo_path")
-                ->havingRaw("distance <= ?", [$radius]);
+                // whereRaw com a mesma formula evita erro do PostgreSQL com HAVING em subquery de paginate
+                ->whereRaw("{$haversine} <= ?", [$radius]);
         } else {
             $query->selectRaw("profiles.*, users.nivel_acesso, profile_preferences.invisible_mode, profile_preferences.hide_location, profile_preferences.interested_hobbies, profile_preferences.discoverable_levels, profile_preferences.visible_levels, 0 AS distance, profile_photos.path as primary_photo_path");
         }

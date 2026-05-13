@@ -1,22 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <nav class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center">
-            <h1 class="text-xl font-bold text-gray-800">Chat</h1>
-          </div>
-          <div class="flex items-center space-x-4">
-            <RouterLink to="/matches" class="text-gray-600 hover:text-gray-900">Voltar</RouterLink>
-            <button @click="logout" class="text-red-600 hover:text-red-800">Sair</button>
-          </div>
-        </div>
+  <div class="min-h-screen bg-gray-50 pb-16">
+    <!-- Header simplificado para chat -->
+    <div class="sticky top-0 z-40 bg-white border-b border-gray-100">
+      <div class="flex items-center h-14 px-4 max-w-lg mx-auto">
+        <button @click="router.back()" class="p-2 -ml-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 class="text-lg font-bold text-gray-900 ml-2">Chat</h1>
       </div>
-    </nav>
+    </div>
 
-    <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div class="bg-white rounded-lg shadow h-[600px] flex flex-col">
-        <div class="p-4 border-b">
+    <main class="max-w-lg mx-auto p-4">
+      <div class="bg-white rounded-2xl shadow-sm h-[580px] flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-gray-100">
           <h2 class="text-lg font-bold text-gray-900">Conversa</h2>
         </div>
         <div class="flex-1 p-4 overflow-y-auto">

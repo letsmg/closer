@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="min-h-screen bg-gray-100">
+  <div id="app" class="min-h-screen bg-gray-50">
     <TermsModal @accepted="onAccepted" />
     <RouterView />
   </div>
