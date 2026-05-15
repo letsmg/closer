@@ -32,11 +32,6 @@ use App\Http\Controllers\Api\{
 // Mantém apenas a rota legada de cadastro para compatibilidade temporária
 Route::post('/cadastrar', [UserController::class, 'cadastrar'])->name('cadastrar.legacy');
 
-// Verificação de e-mail (Link clicado no e-mail) - Deve ser registrado antes de tudo para garantir o nome
-Route::get('/email/verify/{id}/{hash}', [JwtAuthController::class, 'verify'])
-    ->middleware(['signed'])
-    ->name('verification.verify');
-
 /*
 |--------------------------------------------------------------------------
 | OAUTH2 ENDPOINTS (RFC 6749 Standard)

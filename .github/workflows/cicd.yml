@@ -78,22 +78,24 @@ jobs:
             sudo rm -rf ${NEW_RELEASE}/public/storage
             sudo ln -sfn ${SHARED_PATH}/storage/app/public ${NEW_RELEASE}/public/storage
             
-            # 6. ARTISAN E AUTOLOAD (Executado no Servidor)
-            cd ${NEW_RELEASE}
-            
+            # 6. PREPARAR AUTOLOAD
             # Força o Composer a mapear as classes no novo caminho físico
             sudo -u www-data composer dump-autoload --optimize
-            
+
             # Limpa caches que podem conter caminhos absolutos do GitHub Actions
             sudo -u www-data php artisan optimize:clear
-            
+
+            # Roda migrations
             sudo -u www-data php artisan migrate --force
-            sudo -u www-data php artisan optimize
-            
-            # 7. SWAP ATÔMICO
+
+            # 7. SWAP ATÔMICO (troca o symlink ANTES de gerar cache)
             sudo ln -sfn ${NEW_RELEASE} ${LIVE_LINK}
-            
-            # 8. REINICIALIZAÇÃO E LIMPEZA
+
+            # 8. OTIMIZAÇÃO (roda dentro do symlink current, não no diretório temporário)
+            cd ${LIVE_LINK}
+            sudo -u www-data php artisan optimize
+
+            # 9. REINICIALIZAÇÃO E LIMPEZA
             sudo systemctl restart php8.3-fpm 
             sudo rm -f /tmp/${PROJECT}-deploy.zip
             
