@@ -28,38 +28,14 @@ use App\Http\Controllers\Api\{
 |--------------------------------------------------------------------------
 */
 
-/*
-|--------------------------------------------------------------------------
-| AUTH JWT - Sistema de Autenticação JWT
-|--------------------------------------------------------------------------
-| Endpoints de autenticação movidos para routes/auth.php
-| Acesse: POST /api/auth/login, /api/auth/register
-| Documentação: https://github.com/tymondesigns/jwt-auth
-*/
-
-// Mantém compatibilidade temporária com rotas antigas (serão removidas)
+// Rotas de autenticação movidas para routes/auth.php
+// Mantém apenas a rota legada de cadastro para compatibilidade temporária
 Route::post('/cadastrar', [UserController::class, 'cadastrar'])->name('cadastrar.legacy');
-Route::post('/login', [JwtAuthController::class, 'login'])->name('api.login');
 
 // Verificação de e-mail (Link clicado no e-mail) - Deve ser registrado antes de tudo para garantir o nome
 Route::get('/email/verify/{id}/{hash}', [JwtAuthController::class, 'verify'])
     ->middleware(['signed'])
     ->name('verification.verify');
-
-
-Route::prefix('auth')->group(function () {
-    Route::post('/register', [UserController::class, 'register']);
-    Route::post('/login', [JwtAuthController::class, 'login']);
-    
-    // Refresh público (usa refresh_token do cookie/body, não o access_token)
-    Route::post('/refresh', [JwtAuthController::class, 'refresh']);
-
-    Route::middleware(['auth.hybrid'])->group(function () {
-        Route::get('/me', [JwtAuthController::class, 'me'])->name('api.auth.me');
-        Route::post('/logout', [JwtAuthController::class, 'logout']);
-        Route::post('/email/resend', [JwtAuthController::class, 'resend'])->name('verification.resend');
-    });
-});
 
 /*
 |--------------------------------------------------------------------------
