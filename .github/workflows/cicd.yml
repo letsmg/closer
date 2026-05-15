@@ -78,8 +78,8 @@ jobs:
             sudo rm -rf ${NEW_RELEASE}/public/storage
             sudo ln -sfn ${SHARED_PATH}/storage/app/public ${NEW_RELEASE}/public/storage
             
-            # 6. PREPARAR AUTOLOAD
-            # Força o Composer a mapear as classes no novo caminho físico
+            # 6. PREPARAR AUTOLOAD (dentro do diretório da nova release)
+            cd ${NEW_RELEASE}
             sudo -u www-data composer dump-autoload --optimize
 
             # Limpa caches que podem conter caminhos absolutos do GitHub Actions
