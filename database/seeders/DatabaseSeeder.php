@@ -9,6 +9,7 @@ use Database\Seeders\UserSeeder;
 use Database\Seeders\CitySeeder;
 use Database\Seeders\StateSeeder;
 use Database\Seeders\CountrySeeder;
+use Database\Seeders\UserTermsAcceptanceSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,6 +24,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,  // Staff users (admin, operator, etc.)
             ReportSeeder::class,
             ProfileSeeder::class, // Profiles + Preferences + Hobbies for regular users
+            UserTermsAcceptanceSeeder::class, // Terms acceptance for all users
         ]);
         
         // 🔒 Define token_version único baseado em timestamp para cada seed

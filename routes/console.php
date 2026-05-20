@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Jobs\LimparLogsAcesso;
 use App\Jobs\AtualizarReputacaoInativos;
+use App\Jobs\CleanOldVisitorLogs;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,11 @@ Schedule::job(new LimparLogsAcesso)
 // Segunda-feira às 04:00
 Schedule::command('closer:limpar-fotos')
     ->weeklyOn(1, '04:00'); // 1 = Segunda
+
+// 🧹 Limpa logs de visitantes não cadastrados (Política de Privacidade - 90 dias)
+// Todos os dias às 02:00
+Schedule::job(new CleanOldVisitorLogs)
+    ->dailyAt('02:00');
 
 
 /*

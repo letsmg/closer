@@ -94,6 +94,12 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         return $this->hasOne(Profile::class);
     }
 
+    // User can have multiple terms acceptances (history of consent)
+    public function termsAcceptances()
+    {
+        return $this->hasMany(UserTermsAcceptance::class);
+    }
+
     // User can have multiple preferences (pivot table)
     public function preferencias()
     {

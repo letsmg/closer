@@ -8,6 +8,7 @@ use App\Models\Block;
 use App\Models\Report;
 use App\Models\UserMatch;
 use App\Models\LikeModel;
+use App\Policies\BlockPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReputationService;
@@ -16,6 +17,12 @@ class BlockController extends Controller
 {
     /**
      * Registers a block and optionally a report
+     * 
+     * Regras de bloqueio por nível de acesso:
+     * - MODERATOR(1): pode bloquear customers abaixo de COFOUNDER(4)
+     * - COFOUNDER(4)+ e STAFF: podem bloquear qualquer customer
+     * - FREE(0): só pode bloquear outros FREE(0)
+     * - Ninguém pode bloquear STAFF
      */
     public function store(Request $request)
     {
@@ -33,6 +40,21 @@ class BlockController extends Controller
         // Prevent self-blocking
         if ($user->id == $targetId) {
             return response()->json(['error' => 'Invalid operation.'], 400);
+        }
+
+        // Busca o usuário alvo para verificação de nível
+        $target = User::find($targetId);
+        if (!$target) {
+            return response()->json(['error' => 'User not found.'], 404);
+        }
+
+        // 🔒 Verifica permissão de bloqueio via BlockPolicy
+        $policy = new BlockPolicy();
+        if (!$policy->block($user, $target)) {
+            return response()->json([
+                'error' => 'Você não tem permissão para bloquear este usuário.',
+                'message' => 'Seu plano não permite bloquear usuários deste nível de acesso.'
+            ], 403);
         }
 
         return DB::transaction(function () use ($user, $targetId, $request) {

@@ -4,12 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\UserMatch;
-use App\Models\Mensagem;
-use App\Models\Bloqueio;
+use App\Models\Message;
+use App\Models\Block;
+use App\Models\User;
+use App\Repositories\MessageRepository;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
+    public function __construct(
+        private MessageRepository $messageRepository
+    ) {}
+
+    /**
+     * Exibe as mensagens de um match específico
+     */
     public function show($matchId, Request $request)
     {
         $user = $request->user();
@@ -24,25 +33,27 @@ class ChatController extends Controller
         // 2. Identificar o parceiro
         $parceiroId = ($match->user_one_id == $user->id) ? $match->user_two_id : $match->user_one_id;
         
-        // Verificação de Bloqueio: Se houver bloqueio, o chat não deve abrir
-        $bloqueado = Bloqueio::where(function($q) use ($user, $parceiroId) {
-            $q->where('user_id', $user->id)->where('blocked_user_id', $parceiroId);
+        // Verificação de Bloqueio
+        $bloqueado = Block::where(function($q) use ($user, $parceiroId) {
+            $q->whereHas('profile', fn($p) => $p->where('user_id', $user->id))
+              ->whereHas('blockedProfile', fn($p) => $p->where('user_id', $parceiroId));
         })->orWhere(function($q) use ($user, $parceiroId) {
-            $q->where('user_id', $parceiroId)->where('blocked_user_id', $user->id);
+            $q->whereHas('profile', fn($p) => $p->where('user_id', $parceiroId))
+              ->whereHas('blockedProfile', fn($p) => $p->where('user_id', $user->id));
         })->exists();
 
         if ($bloqueado) {
             return response()->json(['error' => 'Este chat não está mais disponível.'], 403);
         }
 
-        $parceiro = \App\Models\User::with(['fotos'])->find($parceiroId);
+        $parceiro = User::with(['profile.photos'])->find($parceiroId);
 
-        // 3. Trava de limite Nível 0 (Otimizada)
+        // 3. Trava de limite para FREE(0) - máximo de novos matches por dia
         if ($user->nivel_acesso == 0) {
             $meusChatsHoje = UserMatch::where(function($q) use ($user) {
                     $q->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
                 })
-                ->where('created_at', '>=', now()->startOfDay()) // Mais preciso que subDay()
+                ->where('created_at', '>=', now()->startOfDay())
                 ->count();
 
             if ($meusChatsHoje > 20) {
@@ -51,21 +62,28 @@ class ChatController extends Controller
         }
 
         // Marcar mensagens do parceiro como lidas ao abrir o chat
-        $match->mensagens()->where('sender_id', $parceiroId)->update(['lida' => true]);
+        Message::where('user_match_id', $match->id)
+            ->where('sender_id', $parceiroId)
+            ->update(['read' => true]);
 
-        // 4. Preparar o "Pacote" para o Kotlin
+        // 4. Buscar mensagens
+        $mensagens = Message::where('user_match_id', $match->id)
+            ->orderBy('created_at', 'asc')
+            ->paginate(50);
+
         return response()->json([
             'parceiro' => [
                 'id' => $parceiro->id,
                 'nome' => $parceiro->name,
-                'foto' => $parceiro->fotos->where('is_principal', true)->first()?->path, // Usando path conforme padrão anterior
-                'shorts_pergunta' => $parceiro->shorts()->where('tipo', 'q')->orderBy('posicao')->get(),
+                'foto' => $parceiro->profile?->photos?->where('is_principal', true)->first()?->path,
             ],
-            'meus_shorts_resposta' => $user->shorts()->where('tipo', 'r')->orderBy('posicao')->get(),
-            'mensagens' => $match->mensagens()->oldest()->paginate(50) // oldest() costuma ser melhor para chat
+            'mensagens' => $mensagens
         ]);
     }
 
+    /**
+     * Envia uma mensagem em um match existente
+     */
     public function enviarMensagem(Request $request, $matchId)
     {
         $request->validate([
@@ -80,16 +98,82 @@ class ChatController extends Controller
                   ->orWhere('user_two_id', $user->id);
             })->firstOrFail();
 
-        // 2. Salvar a Mensagem
-        $mensagem = Mensagem::create([
+        // 🔒 Verifica limite de mensagens sem match para PLUS(2)
+        // PLUS pode enviar até 10 mensagens/dia para perfis sem match ativo
+        if ($user->nivel_acesso == 2) {
+            $dailyMessages = $this->messageRepository->countTodayMessages($user->id);
+            $limit = $user->getLevelAttribute()->getDailyMessagesLimit();
+            
+            if ($dailyMessages >= $limit) {
+                return response()->json([
+                    'error' => 'Limite diário de mensagens sem match atingido.',
+                    'message' => "Seu plano Plus permite até {$limit} mensagens por dia para perfis sem match."
+                ], 403);
+            }
+        }
+
+        // Salvar a Mensagem
+        $mensagem = Message::create([
             'user_match_id' => $match->id,
             'sender_id'     => $user->id,
-            'conteudo'      => $request->conteudo,
-            'lida'          => false
+            'content'       => $request->conteudo,
+            'read'          => false
         ]);
 
-        // 3. Atualizar o timestamp do match (para ele subir na lista de conversas)
+        // Atualizar o timestamp do match (para ele subir na lista de conversas)
         $match->touch(); 
+
+        return response()->json([
+            'status' => 'sucesso',
+            'mensagem' => $mensagem
+        ], 201);
+    }
+
+    /**
+     * Envia mensagem para um usuário sem match ativo (apenas PLUS+)
+     */
+    public function enviarMensagemDireta(Request $request)
+    {
+        $request->validate([
+            'to_user_id' => 'required|exists:users,id',
+            'conteudo' => 'required|string|max:1000',
+        ]);
+
+        $user = $request->user();
+        $targetId = $request->to_user_id;
+
+        // 🔒 Verifica permissão: apenas PLUS(2)+ pode enviar mensagem sem match
+        if (!$user->hasPlusAccess()) {
+            return response()->json([
+                'error' => 'Seu plano não permite enviar mensagens sem um match ativo.',
+            ], 403);
+        }
+
+        // 🔒 Verifica limite diário para PLUS(2)
+        if ($user->nivel_acesso == 2) {
+            $dailyMessages = $this->messageRepository->countTodayMessages($user->id);
+            $limit = $user->getLevelAttribute()->getDailyMessagesLimit();
+            
+            if ($dailyMessages >= $limit) {
+                return response()->json([
+                    'error' => 'Limite diário de mensagens sem match atingido.',
+                    'message' => "Seu plano Plus permite até {$limit} mensagens por dia para perfis sem match."
+                ], 403);
+            }
+        }
+
+        // Cria um match temporário para agrupar as mensagens
+        $match = UserMatch::firstOrCreate([
+            'user_one_id' => $user->id,
+            'user_two_id' => $targetId,
+        ]);
+
+        $mensagem = Message::create([
+            'user_match_id' => $match->id,
+            'sender_id'     => $user->id,
+            'content'       => $request->conteudo,
+            'read'          => false
+        ]);
 
         return response()->json([
             'status' => 'sucesso',

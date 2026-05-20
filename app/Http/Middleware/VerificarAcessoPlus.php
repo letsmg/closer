@@ -11,13 +11,37 @@ class VerificarAcessoPlus
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Verifica se o usuário tem permissão para acessar o recurso.
+     * Por padrão, verifica hasPlusAccess().
+     * Se o parâmetro 'feature' for passado, verifica uma feature específica.
+     *
+     * Exemplos de uso nas rotas:
+     *   ->middleware('plus')                          // hasPlusAccess()
+     *   ->middleware('plus:viewLikes')                // canViewLikes()
+     *   ->middleware('plus:sendMessagesWithoutMatch')  // canSendMessagesWithoutMatch()
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ?string $feature = null): Response
     {
-        //esse middleware é para verificar se o usuário tem acesso ao conteúdo Plus, ou seja, se ele é premium ou tem nível de acesso 1 ou superior
         $user = auth()->user();
-        if (!$user || !$user->hasPlusAccess()) {
+        
+        if (!$user) {
+            abort(403, 'Acesso negado.');
+        }
+
+        // Se uma feature específica foi solicitada, verifica o método correspondente
+        if ($feature) {
+            $methodName = 'can' . ucfirst($feature);
+            
+            if (method_exists($user, $methodName)) {
+                if (!$user->{$methodName}()) {
+                    abort(403, 'Acesso negado. Recurso não disponível para seu plano.');
+                }
+                return $next($request);
+            }
+        }
+
+        // Comportamento padrão: verifica hasPlusAccess()
+        if (!$user->hasPlusAccess()) {
             abort(403, 'Acesso negado.');
         }
         

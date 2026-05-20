@@ -207,4 +207,45 @@ class UserPolicy
     {
         return $user->isAdmin();
     }
+
+    /**
+     * Determine whether the user can view sensitive location data.
+     * 
+     * Apenas ADMIN(10) pode ver geolocalização exata.
+     * OPERATIONAL(11) e SUPPORT(12) veem apenas dados mascarados.
+     */
+    public function viewSensitiveLocation(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can view payment/financial data.
+     * 
+     * Apenas ADMIN(10) pode ver dados financeiros.
+     * OPERATIONAL(11) e SUPPORT(12) são estritamente bloqueados.
+     */
+    public function viewFinancialData(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can view real-time tracking logs.
+     * 
+     * Apenas ADMIN(10) pode ver logs de rastreamento em tempo real.
+     * OPERATIONAL(11) é bloqueado por questões de privacidade (LGPD/ISO 27001).
+     */
+    public function viewTrackingLogs(User $user): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can view raw IP addresses.
+     */
+    public function viewRawIp(User $user): bool
+    {
+        return $user->isAdmin();
+    }
 }

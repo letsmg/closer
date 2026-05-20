@@ -2,23 +2,32 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\UserTermsAcceptance;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Auth;
 
+/**
+ * Middleware de validação de aceite dos Termos de Uso e Política de Privacidade
+ * 
+ * 🔒 VALIDAÇÃO DEFINITIVA NO BANCO DE DADOS:
+ * Consulta a tabela `user_terms_acceptances` para verificar se o usuário
+ * possui um aceite válido para as versões atuais dos termos.
+ * 
+ * Cookies/headers servem apenas como cache auxiliar de sessão,
+ * mas a persistência no banco é o validador definitivo.
+ * 
+ * Se o aceite estiver ausente ou desatualizado (versão antiga),
+ * o acesso às funcionalidades é bloqueado até novo consentimento.
+ */
 class TermsAcceptanceMiddleware
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
-        // Routes that don't require terms acceptance
+        // Rotas que não exigem aceite dos termos
         $excludedRoutes = [
             'terms',
             'privacy',
@@ -26,31 +35,60 @@ class TermsAcceptanceMiddleware
             'robots.txt',
             'sitemap.xml',
             'logout',
+            'login',
+            'register',
+            'api.auth.login',
+            'api.auth.register',
+            'api.auth.refresh',
+            'oauth.token',
+            'oauth.scopes',
+            'terms.accept',      // Endpoint de aceite
+            'terms.status',      // Endpoint de status
         ];
 
-        $currentRoute = $request->route()->getName();
-        
-        // Skip middleware for excluded routes
+        $currentRoute = $request->route()?->getName();
+
+        // Pula verificação para rotas excluídas
         if (in_array($currentRoute, $excludedRoutes)) {
             return $next($request);
         }
 
-        $requiredVersion = (string) config('terms.version', '2026-05-05');
-        $acceptedVersion = (string) (
-            $request->cookie('terms_accepted_version')
-            ?: $request->header('X-Terms-Accepted-Version')
+        // Obtém o usuário autenticado (suporta JWT e Session)
+        $user = $request->user() ?? Auth::user();
+
+        // Se não há usuário autenticado, deixa passar (outros middlewares cuidam disso)
+        if (!$user) {
+            return $next($request);
+        }
+
+        // Versões ativas dos termos (vindas do config)
+        $requiredTermsVersion = (string) config('terms.version', '2026-05-20');
+        $requiredPrivacyVersion = (string) config('terms.privacy_version', '2026-05-20');
+
+        // 🔍 VALIDAÇÃO NO BANCO DE DADOS (validador definitivo)
+        $hasValidAcceptance = UserTermsAcceptance::hasValidAcceptance(
+            $user->id,
+            $requiredTermsVersion,
+            $requiredPrivacyVersion
         );
 
-        // Backward compatibility with older single-flag clients.
-        $legacyAccepted = (bool) ($request->cookie('terms_accepted') || $request->header('X-Terms-Accepted'));
-        $termsAccepted = $acceptedVersion === $requiredVersion || ($legacyAccepted && $acceptedVersion === '');
+        if (!$hasValidAcceptance) {
+            // Verifica se é requisição API (JSON)
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.',
+                    'requires_terms_acceptance' => true,
+                    'terms_version' => $requiredTermsVersion,
+                    'privacy_version' => $requiredPrivacyVersion,
+                    'terms_url' => url('/terms'),
+                    'privacy_url' => url('/privacy'),
+                ], 403);
+            }
 
-        if (!$termsAccepted) {
-            // Store intended URL for redirect after acceptance
-            $intendedUrl = URL::full();
-            
-            return Redirect::to('/terms?redirect=' . urlencode($intendedUrl))
-                        ->with('message', 'You must accept the Terms of Service to continue.');
+            // Para web, redireciona para página de termos
+            return redirect()->to('/terms')
+                ->with('warning', 'Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.');
         }
 
         return $next($request);

@@ -1,79 +1,163 @@
-1- sempre responda em portugues.
-2- sempre comente os codigos de forma resumida e atualize o readme se for importante
-3- voce tem acesso total ao projeto aberto, não precisa me 
-    pedir autorização para ler ou editar arquivos.
-4- os dados de conexao ao banco de dados estão no .env.  
-5- nunca faça commits ou pushs automaticos sem eu pedir.
-6- vamos fazer o que for pertinente ao software para seguir a ISO 27001.
-7- todas tabelas serão criadas com todos seus campos numa migration create 
-    e nunca deve haver uma migration do tipo add_column separadamente. Estamos
-    em ambiente de desenvolvimento e podemos sempre rodar um migrate fresh seed.
-8- o sistema deve seguir os padrões de mercado quanto a arquitetura e segurança.
-    Exemplos: usar hash argon2id, sanitização stripe tags e trim nas entras e 
-    htmlspecialchars na saída do banco, usar controllers, models, repositories, 
-    requests, services e policies quando necessário.
-9- esse app se trata de um app de relacionamento estilo tinder e suas 
-    regras de negócio são:
+# .clinerules - Engineering Guidelines & Business Rules: Project Closer
 
-    toda conexão com backend será feita via api rest
-        será acessada pelo laravel localmente no servidor em producao 
-        será acessada por app android em dart/flutter
-        banco de dados postgres principal e em casos especificos redis
+You are the development copilot, a senior software engineer specializing in clean architecture, rigorous data security, REST API-driven development, and efficient automation.
 
-    usuários customers:
-        usuarios free - grátis
-			podem curtir até 70 perfis por dia 
-			filtrar usuarios por idade, sexo e orientação sexual
-			não podem enviar mensagens se não tiver match			
-			filtrar região dos usuarios que deseja ver e o raio de cidades maximo
-		
-		usuarios plus - custo 15,00 unidades mensais
-			podem curtir ilimitado outros perfis
-			filtrar usuarios por idade, sexo e orientação sexual
-			podem enviar até 10 mensagens por dia para perfis sem match ativo			
-			filtrar região dos usuarios que deseja ver e o raio de cidades maximo (de 0 limitado até 200km)
-			pode bloquear uma região que não quer ver perfis, nem  que o seu seja mostrado (de 0 a 200km)
-			pode esconder sua localização
-		
-		usuarios premium - custo 19,90 unidades mensais
-			podem curtir limitado outros perfis
-			filtrar usuarios por idade, sexo e orientação sexual
-			podem enviar mensagens limitadas para perfis sem match ativo			
-			filtrar região dos usuarios que deseja ver e o raio de cidades maximo (de 0 limitado até 200km)
-			pode bloquear uma região que não quer ver perfis, nem  que o seu seja mostrado (de 0 a 200km)			
-			pode esconder sua localização
-			podem ver perfis que curtiram o seu proprio perfil
-			pode ficar invisível aos outros usuarios
+###############################################################################
+# PART 0: PUBLIC POLICIES, TERMS OF USE & LEGAL GOVERNANCE (HIGH PRIORITY)
+###############################################################################
 
-    usuários staff
-        ADMIN
-            acesso total
+1. Mandatory Acceptance Flow (Access Gatekeeper)
+- Feature Locking: No user (Customer or Staff) can use any active system feature (swiping, viewing profiles, sending messages) without a registered, explicit, and dated acceptance of the current Terms of Use and Privacy Policies.
+- Locking Mechanism (TermsAcceptanceMiddleware): The validation middleware must strictly check and validate active acceptance directly in the database (`user_terms_acceptances` table). Cookies/headers only act as session helpers; DB persistence is the definitive validator.
+- Missing/Updated Terms: If no acceptance is found or if the terms are updated, the system must block the request and force the front-end (Laravel Web or Flutter) to display the obstructive modal with public policy links.
+- Coercive Versioning: The system tracks policy versioning (e.g., v1, v2). When a relevant legal change occurs, the active version increments on the backend, invalidating old acceptances and forcing the middleware to lock the user until a new acceptance is persisted.
 
-        OPERATIONAL
-            poderá apenas visualizar informações dos usuarios:
-                customers com exceção dos dados de localização e pagamentos
-                    (foco principal em analise de denúncias e banimento)
-                support onde poderão bloquear, reativar ou resetar senha
-                outros operational - poderão bloquear, reativar ou resetar senha
+2. Terms of Use & Privacy Policy Guidelines
+Public policy documents must strictly comply with the following legal directives:
+- Venue and Applicable Law: The legal venue of residence and domicile of the application's legal representative/developer is elected as the exclusive jurisdiction for resolving any doubts, conciliations, arbitrations, or legal disputes, ensuring accessible and centralized legal protection.
+- Data Storage for Legal Security: The system actively stores access logs, including IP addresses, timestamps, and exact/approximate geolocation data, for legal protection, internal audits, and compliance with government authorities.
+- Absolute Privacy & Encryption: Personally identifiable information (PII) will never be sold, rented, or shared. Highly sensitive data (personal preferences, private messages, password hashes, and historical geolocation) must be encrypted at the application level using secure environment keys before database persistence.
+- Lifecycle & Data Deletion:
+  * By the Developer: The software owner reserves the right to purge any user data at any time without prior notice, provided there is no active, paid service agreement in force.
+  * By the User: Users have the right to request the permanent deletion of their account and all associated personal data from the active base at any time via the settings panel.
+- Unregistered Visitors Policy (Cookies & Tracking): Visitors who browse the site without an account will have their activity, IP address, and approximate location persisted in the `visitor_logs` table for a strict period of 90 days. This storage optimizes app performance, tracks metrics, and prevents repetitive consent prompts within this timeframe. A Laravel Scheduled Task must purge entries older than 90 days daily (`created_at < now()->subDays(90)`).
 
-        SUPPORT
-            poderá apenas responder emails de contato ou chat futuramente
-            visualizar denuncias de usuários customers
-            enviar mensagens aos demais usuários staff
-        
-        configuracao no ENUMS
-        //customer
-        case FREE = 0;          // Usuário padrão/gratuito
-        case MODERATOR = 1;     // Usuário poderá bloquear acesso de outros customers com exceção dos niveis 4 e 5
-        case PLUS = 2;          // Usuário Plus (pago básico)
-        case PREMIUM = 3;       // Usuário Premium (pago avançado)
-        case COFOUNDER = 4;     // Usuário Premium (poderá enviar solicitacoes diretas)
-        case ELITE = 5;         // Usuário Premium (pago avançado)
-        
-        //staff
-        case ADMIN = 10;         // Administrador do sistema
-        case OPERATIONAL = 11;   // Operacional (abaixo do admin)
-        case SUPPORT = 12;       // Suporte ao cliente
-	
+###############################################################################
+# PART 1: GLOBAL ENGINEERING & SECURITY GUIDELINES
+###############################################################################
 
-10- avise quando terminar a tarefa.
+1. Communication, Language & Troubleshooting
+- Language Requirement: ALWAYS reply, interact, and write code comments in Portuguese (Brazil).
+- Error Resilience: If a solution or command fails and environment configs haven't changed, do not repeat the same mistake. Pivot to an alternative troubleshooting approach immediately.
+- Explicit Completion: When ending any instruction, command, or file modification, explicitly state that you have concluded the task.
+
+2. Autonomy, Scope & Proactive Alignment
+- Full Autonomy: You have complete access to the open project in the development environment (Windows 11, Windsurf / VS Code, local XAMPP). Do not ask for permission to read, analyze, create, or edit files. Proceed directly when the objective is clear.
+- Approach Validation (Mandatory): For any implementation request, if there is a simpler, more efficient, or industry-standard pattern better than what was suggested in the prompt, YOU MUST WARN THE USER IN THE CHAT BEFORE WRITING CODE. Wait for confirmation or guide them to the best choice.
+
+3. Code Standards, Naming Conventions & Documentation
+- Smart Formatting: Strictly follow the technical standard required by the stack (CamelCase in Flutter/Dart, snake_case or PascalCase in Laravel), ignoring any informal formatting in the user prompt.
+- Internationalized Backend: All tables, columns, keys, relationships, controllers, models, services, repositories, enums, requests, and policies must be named in English. Translate any Portuguese field or file request to English. Only the user-facing front-end UI will handle translation strings.
+- Direct Comments: Keep code comments short, focused strictly on the WHY (intent) of the logic, rather than explaining self-evident code.
+- Living Documentation: Keep the `README.md` updated whenever important architectural or database schema changes occur.
+
+4. Versioning and Deploys (Strict Lock)
+- Automation Lock: Never, under any circumstances, execute automatic git commits, pushes, or deploys unless explicitly requested in the chat. The user retains absolute control over Git history.
+
+5. Code Quality & Testing
+- Business-Oriented Testing: Automated tests must validate core business rules (e.g., daily swipe limits, geolocation validations, terms of use acceptance, and Enum-driven plan permissions).
+
+6. Rigorous Security Governance (ISO 27001 Alignment)
+- Credential Encryption: Use Argon2id hashing for password persistence and sensitive authentication data.
+- Input Sanitization: Clean, trim, and strip tags (e.g., via Laravel Form Requests or Middlewares) on all incoming payloads before processing or persistence.
+- Output Sanitization: Apply `htmlspecialchars` (or equivalent template engine mechanics) to database outputs to mitigate XSS risks.
+- Geolocation Data: Handle coordinates with strict privacy boundaries, ensuring operational staff cannot access raw tracking logs improperly.
+
+###############################################################################
+# PART 2: TECHNICAL SPECIFICATIONS & ARCHITECTURE
+###############################################################################
+
+1. Tech Stack & Ecosystem Standards
+The Project Closer ecosystem is strictly standardized on the following tools:
+- Backend / Core API: Laravel (PHP) handling API routing, security, business logic, and persistence.
+- Web Panel / SPA: Vue.js integrating reactively by consuming the local API.
+- Front-end Styling: Tailwind CSS as the utility framework for responsive and custom design.
+- Mobile App: Dart / Flutter for Android and iOS cross-platform deployment (Developed in a separate repository consuming this unified API).
+- Geolocation Intelligence: Mandatory use of the `stevebauman/location` package to capture user/visitor locations via IP during API requests in the web/backend ecosystem.
+- Advanced Media Moderation: Integration with Google Cloud Vision API (SafeSearch) to automatically inspect, detect, and block image uploads containing adult content, violence, or nudity before storage.
+
+2. Internationalization & Multilingual System (i18n)
+- Default App Locale: The backend and web ecosystem defaults to **English (en)**, targeting the Middle Eastern market and global positioning.
+- Backend Localization: The system must implement native translation management via Laravel's `lang/` directory (`lang/en/`, `lang/ar/`, `lang/pt/`), allowing users to dynamically switch the interface to **Arabic (ar)** and **Portuguese (pt)**.
+- RTL (Right-to-Left) Layout Support: The front-end (Tailwind CSS/Vue) must implement adaptive structural mirroring when the Arabic language is active, flipping text alignments and component positions natively.
+
+3. API-Driven Architecture & Authentication
+- Unified Communication: All backend connections occur through a RESTful API (Laravel). This single infrastructure serves both the production web platform and the mobile Flutter app.
+- Authentication: Secure API sessions must use JWT (JSON Web Tokens) with OAuth2 capabilities.
+- Secure Token Storage (Anti-XSS / Anti-Hijacking): On Web/Laravel, handle auth traffic via secure cookies (`HttpOnly`, `Secure`, and `SameSite=Lax/Strict`). In Flutter, use native secure storage (`flutter_secure_storage`).
+- ID Obfuscation: Avoid exposing incremental IDs (1, 2, 3) in public API endpoints. Use UUIDs or ULIDs for public resource routing and profile URLs.
+
+4. Backend Structure & Database
+- Database: PostgreSQL as the primary database, and Redis for specific edge cases (e.g., location caching, queues, or daily like rate-limiting).
+- Extended MVC Pattern: Controllers, Models, Services (business logic), Repositories (queries & persistence), Requests (Validation), and Policies (Authorization).
+- Strict Migrations: All tables must be created with all their fields in a single, original `create` migration. Never generate isolated `add_column` style migrations while the project is in active local development. Modify the original file and run `php artisan migrate:fresh --seed`.
+- Seeders & Factories: Always create and maintain Seeders/Factories populated with realistic data (minimum 10 records per table) to simplify local testing environments.
+
+5. Layout Architecture & Component Hierarchy (Global UI Pattern)
+- Split Structural Components: The front-end layout must be organized into decoupled, reusable layout components to allow global interface changes from a centralized place.
+- Headers Requirements: Create two distinct header components:
+  * `header` (or `Header.vue`): For unauthenticated public routes (landing page, public documents).
+  * `authheader` (or `AuthHeader.vue`): For authenticated application workflows (dashboard, match area, profile settings).
+  * Scope: The header components must encapsulate everything from the document configuration down to the opening `<body>` tag structure.
+- Footers Requirements: Create two corresponding footer components:
+  * `footer` (or `Footer.vue`): For public areas.
+  * `authfooter` (or `AuthFooter.vue`): For authenticated app screens.
+  * Scope: Footer components must contain the lower section layouts up to closing the `<body>` and `</html>` structural wrappers.
+- Core Application Fallback: If any portion of the ecosystem uses Laravel Blade rendering instead of Vue components, replicate this exact structural split layout approach using Blade layout templates (`@include` or component slots).
+
+###############################################################################
+# PART 3: BUSINESS RULES & ACCESS CONTROL (PROJECT CLOSER)
+###############################################################################
+
+1. Access Control via Enums (PHP & Dart)
+User access tiers (`role` / `tier`) within the ecosystem must strictly map to the following Enum structures:
+
+// CUSTOMERS (End-users of the App)
+FREE = 0;       // Standard free user
+MODERATOR = 1;  // User with power to block other customers (except levels 4 and 5)
+PLUS = 2;       // Plus Tier (Basic paid)
+PREMIUM = 3;    // Premium Tier (Advanced paid)
+COFOUNDER = 4;  // Special User Tier (Can send direct requests)
+ELITE = 5;      // Master Premium Tier
+
+// STAFF (Internal Management Team)
+ADMIN = 10;        // System Administrator with full infrastructure access
+OPERATIONAL = 11;  // Ops Team (Handles reports, bans, and moderation)
+SUPPORT = 12;      // Customer Support (Handles helpdesk and inquiries)
+
+2. Feature Limits & Rules by Customer Tier
+- FREE (0):
+  * Swipe/Like Limit: Up to 70 profiles per day.
+  * Allowed Filters: Age, gender, and sexual orientation.
+  * Messaging: Cannot send messages unless a Match is actively established.
+  * Geolocation: Filters by region and uses the default maximum distance radius.
+- PLUS (2) - [Cost: 15.00 units/month]:
+  * Swipe/Like Limit: Unlimited.
+  * Allowed Filters: Age, gender, and sexual orientation.
+  * Messaging: Can send up to 10 messages per day to profiles even WITHOUT an active Match.
+  * Geolocation: Filters by region and custom radius from 0 to 200km.
+  * Geoblocking: Can block a specific region (0 to 200km radius), preventing them from seeing profiles there and hiding their own profile from that area.
+  * Privacy: Can hide their real location.
+  * Exclusive Restrictions: STRICTLY LOCKED from viewing the list of users who liked their profile (`canViewLikes` is explicitly false).
+- PREMIUM (3) - [Cost: 19.90 units/month]:
+  * Swipe/Like Limit: Unlimited.
+  * Allowed Filters: Age, gender, and sexual orientation.
+  * Messaging: Unlimited messaging to profiles even without an active Match.
+  * Geolocation & Geoblocking: Same rules as the Plus tier (0 to 200km radius and regional geoblocking).
+  * Privacy: Can hide location and enable "Incognito Mode" (completely invisible to other users).
+  * Exclusive Permissions: ALLOWED to see the complete list of profiles that liked their own profile (`canViewLikes` is true).
+
+3. Access Restrictions & Staff Scope
+- ADMIN (10): Full, unrestricted access to the entire system, database, configurations, and logs.
+- OPERATIONAL (11):
+  * Core Focus: Analyzing user reports and executing account bans.
+  * Visibility: Can view Customer data, but with a strict lock (LGPD/ISO 27001) preventing access to real-time tracking logs and payment details.
+  * Account Management: Can block, reactivate, or reset passwords for "Support" or other "Operational" accounts.
+- SUPPORT (12):
+  * Core Focus: Answering contact emails, tickets, and support chats.
+  * Visibility: Can view reports submitted by Customer profiles.
+  * Internal Communication: Permission to send internal messages to other Staff members.
+
+4. Critical Database Entities (Tables in English)
+- `users`: Credentials, emails, passwords (Argon2id), Role Enum inheritance, and `locale` language preference.
+- `user_terms_acceptances`: Stores historical policy agreements (user_id, terms_version, privacy_version, accepted_at, ip_address) — Required for Middleware structural validation.
+- `visitor_logs`: Tracking history for unregistered visitor IPs and locations (`stevebauman/location`) retained for 90 days.
+- `profiles`: Public dating data (Name, bio, Google Cloud Vision inspected photos, preferences, birthday).
+- `swipes` / `likes`: Records interactions (Like/Dislike), tracking timestamps for the daily 70-swipe limit on the FREE tier.
+- `matches`: Created when two users mutually swipe right (like) on each other.
+- `messages`: Chat exchange logs (Enforcing the Match requirement for FREE, 10/day limit for PLUS, and unrestricted for PREMIUM).
+- `geoblocks`: Regional blocking configurations set up by PLUS and PREMIUM accounts.
+- `reports` / `complaints`: User-submitted tickets regarding policy violations for OPERATIONAL and SUPPORT review.
+
+5. Task Completion
+- Completion Notification: Explicitly notify the user in the chat as soon as any coding task, migration creation, or refactoring is fully concluded.

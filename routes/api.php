@@ -86,9 +86,15 @@ Route::middleware('throttle:120,1')
 |
 */
 
+// Endpoint para aceitar os termos (fora do middleware terms.accepted para não bloquear a si mesmo)
 Route::middleware(['auth.hybrid', 'verified.hybrid'])->group(function () {
+    Route::post('/terms/accept', [TermsAcceptanceController::class, 'accept'])->name('terms.accept');
+    Route::get('/terms/status', [TermsAcceptanceController::class, 'status'])->name('terms.status');
+});
 
-    Route::get('/quem-me-deu-like', [LikeController::class, 'index'])->middleware('plus');
+Route::middleware(['auth.hybrid', 'verified.hybrid', 'terms.accepted'])->group(function () {
+
+    Route::get('/quem-me-deu-like', [LikeController::class, 'index'])->middleware('plus:viewLikes');
 
 
     Route::put('/usuario/atualizar', [UserController::class, 'atualizar']);

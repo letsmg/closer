@@ -231,10 +231,13 @@ enum UserLevel: int
 
     /**
      * Retorna se pode ver quem deu like
+     * 
+     * Regra de negócio: Apenas PREMIUM(3)+ pode ver a lista de quem curtiu.
+     * PLUS(2) tem este recurso BLOQUEADO (canViewLikes = false).
      */
     public function canViewLikes(): bool
     {
-        return $this->value >= self::PLUS->value && $this->value < self::ADMIN->value;
+        return $this->value >= self::PREMIUM->value && $this->value < self::ADMIN->value;
     }
 
     /**
